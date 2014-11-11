@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Resize test</title>
+  <script src="./movies.js"></script>
+</head>
+<body>
+<p>Seconds to reisze 100 images: <b id="total">calculating ...</b> seconds</p>
+<p>Click on the image to see original image</p>
+<table>
+  <tr>
+    <td>Resize to width</td><td><input type="text" id="r_width" value="200" /> <button onclick="draw_thumbs('width', document.getElementById('r_width').value)">Go!</button></td>
+  </tr>
+  <tr>
+    <td>Crop to width-height</td><td><input id="r_crop" value="200x200" /> <button onclick="draw_thumbs('crop', document.getElementById('r_crop').value)">Go!</button></td>
+  </tr>
+</table>
+<br />
+<br />
+<div id="target" onload="alert(1)"></div>
+<script>
+window.r_time = function() {
+  document.getElementById('total').innerHTML = (new Date() - window.start)/1000  
+}
+
+window.draw_thumbs = function(schema, size) {
+  target = document.getElementById('target')
+  target.innerHTML = ''
+  window.start = new Date()
+  for (var i=0; i<100; i++) {
+    target.innerHTML += '<a href="'+imgs[i]+'"><img onload="r_time()" style="width:200px; -height:300px; border:1px solid #aaa; margin-right:10px; margin-bottom:10px;" src="http://0.0.0.0:9292/resize?'+schema+'='+size+'&image='+imgs[i]+'" /></a>'
+  }
+}
+
+draw_thumbs('crop', 200)
+</script>
+
+</body>
+</html>
