@@ -2,6 +2,30 @@
 
 require 'sinatra'
 require 'digest'
+require 'json'
+require 'base64'
+require 'openssl'
+
+### COPY THIS CLASS TO RAILS SERVER AND USE IT TO ENCODE URLS
+class ResizePacker
+  SECRET = 'BIG-SECRET-!!!'
+
+  def self.cipher(mode, data)
+    cipher = OpenSSL::Cipher::Cipher.new('aes-256-cbc').send(mode)
+    cipher.key = Digest::SHA512.digest(SECRET)
+    cipher.update(data.to_s) << cipher.final
+  end
+
+  def self.pack(data)
+    Base64.urlsafe_encode64(cipher(:encrypt, [data].to_json)).gsub(/\s/,'')
+  end
+
+  def self.unpack(text)
+    JSON.parse(cipher(:decrypt, Base64.urlsafe_decode64(text)))[0]
+  end
+
+end
+### PACKER ENCODER CODE END
 
 ROOT = Dir.getwd
 error = nil
@@ -12,8 +36,11 @@ for dir in ['cache','cache/originals', 'cache/resized', 'cache/pages', 'cache/cr
 end
 
 def md5(data)
-  Digest::MD5.hexdigest data
+  ret = Digest::MD5.hexdigest data
+  ret[2,0] = '/'
+  ret
 end
+
 
 class Image
   attr_reader :ext, :original, :resized
@@ -27,8 +54,14 @@ class Image
     @original = "#{ROOT}/cache/originals/#{md5(@image)}.#{@ext}"
   end
 
-  def download
-    `curl '#{@image}' -s -o '#{@original}'` unless File.exists?(@original)
+  def download(target=nil)
+    `curl '#{@image}' --create-dirs -s -o '#{@original}'` unless File.exists?(@original)
+    
+    if dir = target.dup
+      dir.gsub!(/\/[^\/]+$/,'')
+      Dir.mkdir dir unless Dir.exists?(dir)
+    end
+
     @original
   end
 
@@ -36,19 +69,19 @@ class Image
     resized = "#{ROOT}/cache/resized/#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
 
     unless File.exists?(resized)
-      download
+      download resized
       `convert '#{@original}' -quality #{@quality} -resize #{size}x2000 '#{resized}'` 
     end
     resized
   end
 
   def crop(size, gravity)
-    width, height = size.downcase.split('x')
+    width, height = size.to_s.downcase.split('x')
     height ||= width
     raise 'Image to large' if width.to_i > 1500 || height.to_i > 1500
     cropped = "#{ROOT}/cache/croped/#{width}x#{height}-q#{@quality}-#{md5(@image)}.#{@ext}"
     unless File.exists?(cropped)
-      download
+      download cropped
       `convert #{@original} -quality #{@quality} -resize #{width}x#{height}^ -gravity #{gravity} -background black -extent #{width}x#{height} #{cropped}`
     end
     cropped
@@ -57,26 +90,45 @@ class Image
 end
 
 class Pumatra < Sinatra::Base
-  def get_param(name)
-    ret = params[name]
-    unless ret.length > 0
-      error = "[#{name}] not defined" 
-      return false
-    end
-    ret
-  end
 
   get "/" do
     response.headers['Content-type'] = "text/plain"
 
-    return %[/resize
-      - image = source image
-      - width = integer 10<->1000
-      - crop = 200 || 200x300
+    return %[Sinatra image reizer by @dux
+
+    /resize => ONLY ON DEV
+    - image = source image
+    - width = integer 10<->1000
+    - crop = 200 || 200x300
+
+    /pack?image=foo&crop=bar => ONLY ON DEV
+    - just use pack insted of resize
+    - render URL PACKED FOR PRODUCTION
+
+    use ResizePacker class for resizeing on server
+    - ResizePacker.pack({ image:'http://some-destinat.io/n.jpg', width:100 })
+    - used packet/crypted string as prexix on /resize => /resize/somepackedshit[.jpg]
     ]
   end
 
-  get "/resize" do
+  get '/pack' do
+    return 'Unprotected requests are only allowed on local instances' unless ['127.0.0.1','0.0.0.0'].index(request.ip)
+
+    return "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}/resize/#{ResizePacker.pack(params)}.jpg"
+  end
+
+  get "/resize*" do
+    if data=request.path.split(/\/|\./)[2] # recieved packed string
+      begin
+        params.merge! ResizePacker.unpack(data)
+      rescue
+        return "ERROR: Bad crypted string"
+      end
+    else
+      return 'Unprotected requests are only allowed on local instances' unless ['127.0.0.1','0.0.0.0'].index(request.ip)
+    end
+
+
     image = params[:image]
     return '[image] not defined' unless image.to_s.length > 1
 
