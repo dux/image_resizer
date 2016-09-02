@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 
-require "./app"
-# Pumatra.run!
-run Pumatra
+require 'rubygems'
+require 'bundler/setup'
+
+Bundler.require(:default)
+
+require "./app/app"
+
+run Resizer

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sinatra image reizer by @dux</title>
+    <style>
+      body { font-family: arial; font-size:15px; margin-left:30px; }
+      input { padding:4px; width:70px; font-size:14px; }
+      button { padding: 7px; font-size: 14px;}
+      td { height:40px; }
+      td.l { width:100px; text-align: right; padding-right: 20px; }
+      li { margin-bottom:10px; }
+      #error div { background-color: #faa; padding:4px; }
+    </style>
+    <script>
+      window.inform = function(what) {
+        document.getElementById('error').innerHTML = '<div>' + what + '</div>';
+        console.log(what);
+      };
+
+      window.open_url = function(debug) {
+        var opts = {}, url, val;
+
+        document.getElementById('error').innerHTML = '';
+
+        for (el of ['width', 'height', 'crop', 'crop_2', 'image']) {
+          val = document.getElementById(el).value;
+          if (val) opts[el] = val
+        }
+
+        if (opts.crop && opts.crop_2) {
+          opts.crop = opts.crop + 'x' + opts.crop_2
+        }
+
+        if (! opts.image) {
+          return inform('Image URL is required');
+        }
+
+        if (!opts.width && !opts.height && !opts.crop) {
+          return inform('width, height or crop is required');
+        }
+
+        url = []
+
+        for (k of Object.keys(opts)) {
+          url.push(k + '=' + escape(opts[k]))
+        }
+
+        url = url.join('&')
+        var live_url = '/r?' + url
+        var pack_url = '/pack?' + url
+
+        document.getElementById('hash').innerHTML = JSON.stringify(opts)
+        document.getElementById('live').innerHTML = '<a target="_new" href="' + live_url + '">' + live_url + '</a>'
+        document.getElementById('pack').innerHTML = '<a target="_new" href="' + pack_url + '">' + pack_url + '</a>'
+      }
+    </script>
+</head>
+<body>
+<h1>Sinatra image reizer by @dux</h1>
+
+<h2>Usage</h2>
+<pre>ResizeEncoder.generate_url({ image:'', crop: x })</pre>
+
+<h2>Options</h2>
+
+<ul>
+  <li><b>image</b> - source image</li>
+  <li><b>width</b> - integer</li>
+  <li><b>height</b> - integer</li>
+  <li>
+    <b>crop</b> - num || 200x300
+    <ul>
+      <li>200 => 200x200 - if yu send only one number, it becomes square crop</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>Tester</h2>
+
+<ul>
+  <li>Debug URL is /resize?... </li>
+  <li>Production URL is /resize/md5(secret + base64_of_opts)/base64_of_opts.ext </li>
+</ul>
+
+<table>
+  <tr>
+    <td></td>
+    <td id="error"></td>
+  </tr>
+  <tr>
+    <td class="l">Image URL</td>
+    <td><input id="image" style="width:300px;" value="http://www.baumaschinenvergleich.net/sites/default/files/baumaschinenvergleich/baumaschinen/kettenbagger/doosan-dx180lc-3.jpg" /></td>
+  </tr>
+  <tr>
+    <td class="l">Width</td>
+    <td><input id="width" /></td>
+  </tr>
+  <tr>
+    <td class="l">Height</td>
+    <td><input id="height" /></td>
+  </tr>
+  <tr>
+    <td class="l">Crop</td>
+    <td><input id="crop" placeholder="200" /> x <input id="crop_2" placeholder="0" /></td>
+  </tr>
+  <tr>
+    <td class="l">opts</td>
+    <td><div id="hash">...</div></td>
+  </tr>
+  <tr>
+    <td class="l">Live</td>
+    <td><div id="live">...</div></td>
+  </tr>
+  <tr>
+    <td class="l">Pack</td>
+    <td><div id="pack">...</div></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td><button onclick="open_url()">request</button>
+  </tr>
+</table>
+
+<p>info: in development options can be sent as query string</p>
+
+</body>
+</html>
+
