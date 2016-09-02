@@ -5,7 +5,7 @@ require 'json'
 require 'base64'
 require 'openssl'
 
-[:resize_packer, :image, :init].each { |lib| require_relative "./lib/#{lib}" }
+[:resize_encoder, :image, :init].each { |lib| require_relative "./lib/#{lib}" }
 
 class Resizer < Sinatra::Base
 
@@ -30,12 +30,13 @@ class Resizer < Sinatra::Base
   end
 
   get "/r*" do
-    data = request.path.split(/\/|\./)[2] # recieved packed string
+    data = request.path.split('/')[2] # recieved packed string
     if data
       begin
+        data.sub!(/\.\w{3,4}$/,'')
         params.merge! ResizeEncoder.unpack(data)
       rescue
-        return "ERROR: Bad crypted string"
+        return "ERROR: Bad crypted string: #{$!.message}"
       end
     else
       return 'Unprotected requests are only allowed on development as /r?width=...&image=...' unless is_local

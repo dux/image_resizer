@@ -3,6 +3,8 @@ Ruby sinatra image resizer
 
 Sinatra / Puma optimzed very fast and stable image resizer
 
+Used JavaScript Wet Tokens for URL encoding. https://jwt.io
+
 /resize => UNACKED PARAMS ONLY ON DEV
 
 * image = source image
@@ -14,10 +16,18 @@ Sinatra / Puma optimzed very fast and stable image resizer
 * just use pack insted of resize
 * render URL PACKED FOR PRODUCTION
 
+/r/JWT_ENCODED_HASH.jpg => production
+
 use ResizePacker class for resizeing on server
 
 * ResizePacker.pack({ image:'http://some-destinat.io/n.jpg', width:100 })
 * ResizePacker.generate_url({ image:'http://some-destinat.io/n.jpg', width:100 })
+
+## Final form is
+
+```
+http://host/r/#{JWT.encode(hash)}
+```
 
 ```
 http://localhost:9292/r/5x5g4maheKCb0_fqBmwLiihTgc8iduV4gCQSyU3gF9i7H6gPjDdrDjlNjUb9ybJRSwHNo2jQ9Z0aOrSn-KoRvFk5cS9Pp_MlOiqyXQJ_auS0hQS_22jO2af09xueWdDOIXnukBvZcvx322E52wUDbL9cwxAHiRzrpaTgG7EJ8iqI9zALF7_M0UfLDCFrtsKVRHLymPEQlQhqEzOnxQ-G4w==.jpg
