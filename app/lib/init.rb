@@ -11,3 +11,6 @@ def md5(data)
   ret[2,0] = '/'
   ret
 end
+
+# delete all cache files which where not accessd in 2 days
+`find ./cache -depth -type f -atime +2 -delete`
