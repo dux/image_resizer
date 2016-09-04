@@ -54,15 +54,18 @@ class Resizer < Sinatra::Base
 
     response.headers['Content-type'] = "image/#{img.ext}"
     response.headers['Cache-control'] = 'public, max-age=10000000, no-transform'
+    response.headers['ETag'] = Digest::MD5.hexdigest params.to_json
 
     if resize_width > 0
       return 'Image to large' if resize_width > 1500
-      send_file(img.resize(resize_width), :disposition => 'inline')
+      data = img.resize(resize_width)
     else
       gravity = params[:gravity].to_s.downcase
       gravity = 'North' if gravity.length == 0
-      send_file(img.crop(crop_size, gravity), :disposition => 'inline')
+      data = img.crop(crop_size, gravity)
     end
+
+    send_file(data, :disposition => 'inline')
   end
 
 end
