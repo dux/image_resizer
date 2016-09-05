@@ -15,7 +15,7 @@ end
 
 ###
 
-class Resizer
+class ImageResizer
 
   attr_accessor :request, :response, :params
 
@@ -82,7 +82,7 @@ class Resizer
     opts = [:width, :height, :crop, :image].inject({}) { |h, k| h[k] = params[k] if params[k]; h }
     secret = params[:secret] || '-'
 
-    url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}/r/#{ResizeEncoder.pack(opts, secret)}.jpg"
+    url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}/r/#{ImageResizeEncoder.pack(opts, secret)}.jpg"
 
     return %[<html><head></head><body><h3>On server</h3><pre>ResizePacker.generate_url(#{JSON.pretty_generate(opts)})</pre>
       <hr />
@@ -101,7 +101,7 @@ class Resizer
     # recieved packed string
     if data = request.path.split('/')[2]
       data.sub!(/\.\w{3,4}$/,'')
-      opts = ResizeEncoder.unpack(data) rescue Proc.new { return 'error: Bad secret token or other encoging error.' }.call
+      opts = ImageResizeEncoder.unpack(data) rescue Proc.new { return 'error: Bad secret token or other encoging error.' }.call
     end
 
     # if :unsafe recieved in packed string, allow unsafe image resize
@@ -124,7 +124,7 @@ class Resizer
     resize_height = opts[:height].to_i
     crop_size     = opts[:crop]
 
-    img = Image.new(image, opts[:q].to_i)
+    img = ImageResizerImage.new(image, opts[:q].to_i)
 
     if resize_width > 0
       return 'Image to large' if resize_width > 1500

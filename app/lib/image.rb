@@ -1,4 +1,4 @@
-class Image
+class ImageResizerImage
   attr_reader :ext, :original, :resized
 
   def initialize(image, quality=80)

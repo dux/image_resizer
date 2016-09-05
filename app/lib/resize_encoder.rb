@@ -2,7 +2,7 @@
 
 # https://jwt.io/
 
-module ResizeEncoder
+module ImageResizeEncoder
   extend self
 
   JWT_ALGORITHM  = 'HS256'

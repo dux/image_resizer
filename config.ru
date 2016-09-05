@@ -9,4 +9,4 @@ Dotenv.load('.env')
 
 require "./app/app"
 
-run Resizer
+run ImageResizer
