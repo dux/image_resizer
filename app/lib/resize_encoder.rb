@@ -9,13 +9,15 @@ module ResizeEncoder
   RESIZER_SECRET = ENV['RESIZER_SECRET'] || 'secret'
   RESIZER_URL    = ENV['RESIZER_URL'] || 'http://localhost:9292'
 
-  def pack(data)
-    JWT.encode data, RESIZER_SECRET, JWT_ALGORITHM
+  def pack(data, secret=nil)
+    secret ||= RESIZER_SECRET
+    JWT.encode data, secret, JWT_ALGORITHM
   end
 
   def unpack(text)
     data = JWT.decode text, RESIZER_SECRET, true, { :algorithm => JWT_ALGORITHM }
-    data[0]
+    # raise StandardError, data[0]
+    data[0].inject({}){|h,(k,v)| h[k.to_sym] = v; h}
   end
 
   def generate_url(opts)

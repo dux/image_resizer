@@ -21,12 +21,23 @@ class Image
     @original
   end
 
-  def resize(size)
-    resized = "#{ROOT}/cache/resized/#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
+  def resize_width(size)
+    resized = "#{ROOT}/cache/resized/w_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
 
     unless File.exists?(resized)
       download resized
-      `convert '#{@original}' -quality #{@quality} -resize #{size}x2000 '#{resized}'`
+      `convert '#{@original}' -quality #{@quality} -resize #{size}x '#{resized}'`
+    end
+    resized
+  end
+
+  def resize_height(size)
+    resized = "#{ROOT}/cache/resized/h_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
+
+    unless File.exists?(resized)
+      download resized
+      # raise StandardError, "convert '#{@original}' -quality #{@quality} -resize x#{size} '#{resized}'"
+      `convert '#{@original}' -quality #{@quality} -resize x#{size} '#{resized}'`
     end
     resized
   end
