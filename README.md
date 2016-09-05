@@ -1,17 +1,17 @@
-Ruby sinatra image resizer
+Ruby Rack image resizer
 =====================
 
-Sinatra / Puma optimzed very fast and stable image resizer
+Fast and stable image resizer, written in Ruby
 
-Used JavaScript Wet Tokens for URL encoding. https://jwt.io
+Used JSON Web Tokens for URL encoding. https://jwt.io
 
-/resize => UNACKED PARAMS ONLY ON DEV
+/resize
 
 * image = source image
 * width = integer
 * crop = 200 || 200x300
 
-/pack?image=foo&crop=bar => ONLY ON DEV
+/pack?image=foo&crop=bar
 
 * just use pack insted of resize
 * render URL PACKED FOR PRODUCTION
@@ -34,7 +34,7 @@ http://localhost:9292/r/5x5g4maheKCb0_fqBmwLiihTgc8iduV4gCQSyU3gF9i7H6gPjDdrDjlN
 ```
 
 
-### examples
+### localhost examples
 
 http://0.0.0.0:9292/r?crop=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
 
