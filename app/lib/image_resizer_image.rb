@@ -5,6 +5,7 @@ class ImageResizerImage
     @image = image
     @ext = image.split('.').reverse[0].to_s
     @ext = 'jpg' unless @ext.length > 2 && @ext.length < 5
+    @ext = 'jpg' if @ext == 'jpeg'
     @ext = @ext.downcase
     @quality = quality < 10 ? 80 : quality
     @original = "#{ROOT}/cache/originals/#{md5(@image)}.#{@ext}"
@@ -21,12 +22,17 @@ class ImageResizerImage
     @original
   end
 
+  def convert_base
+    # remove alpha for jpegs and keep for png-s
+    "convert '#{@original}' -alpha #{@ext == 'jpg' ? 'remove -background white' : 'on'} -strip -quality #{@quality}"
+  end
+
   def resize_width(size)
     resized = "#{ROOT}/cache/resized/w_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
 
     unless File.exists?(resized)
       download resized
-      `convert '#{@original}' -quality #{@quality} -resize #{size}x '#{resized}'`
+      `#{convert_base} -resize #{size}x '#{resized}'`
     end
     resized
   end
@@ -37,7 +43,7 @@ class ImageResizerImage
     unless File.exists?(resized)
       download resized
       # raise StandardError, "convert '#{@original}' -quality #{@quality} -resize x#{size} '#{resized}'"
-      `convert '#{@original}' -quality #{@quality} -resize x#{size} '#{resized}'`
+      `#{convert_base} -resize x#{size} '#{resized}'`
     end
     resized
   end
@@ -49,7 +55,7 @@ class ImageResizerImage
     cropped = "#{ROOT}/cache/croped/#{width}x#{height}-q#{@quality}-#{md5(@image)}.#{@ext}"
     unless File.exists?(cropped)
       download cropped
-      `convert #{@original} -quality #{@quality} -resize #{width}x#{height}^ -gravity #{gravity} -background black -extent #{width}x#{height} #{cropped}`
+      `#{convert_base} -resize #{width}x#{height}^ -gravity #{gravity} -extent #{width}x#{height} #{cropped}`
     end
     cropped
   end

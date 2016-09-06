@@ -2,12 +2,12 @@
 
 # https://jwt.io/
 
-module ImageResizeEncoder
+module ImageResizerEncoder
   extend self
 
   JWT_ALGORITHM  = 'HS256'
   RESIZER_SECRET = ENV['RESIZER_SECRET'] || 'secret'
-  RESIZER_URL    = ENV['RESIZER_URL'] || 'http://localhost:9292'
+  RESIZER_URL    = ENV['RESIZER_URL']    || 'http://localhost:9292'
 
   def pack(data, secret=nil)
     secret ||= RESIZER_SECRET
@@ -23,7 +23,7 @@ module ImageResizeEncoder
   def generate_url(opts)
     ext = opts[:image].split('.').last
     ext = 'jpg' if ext.to_s.length < 3 && ext.to_s.length > 4
-    "#{RESIZER_URL}/r/#{pack(optd)}.#{ext}"
+    "#{RESIZER_URL}/r/#{pack(opts)}.#{ext}"
   end
 
 end
