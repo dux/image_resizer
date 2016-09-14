@@ -11,12 +11,12 @@ module ImageResizerEncoder
 
   def pack(data, secret=nil)
     secret ||= RESIZER_SECRET
-    JWT.encode data.to_json, secret, JWT_ALGORITHM
+    JWT.encode data, secret, JWT_ALGORITHM
   end
 
   def unpack(text)
     data = JWT.decode text, RESIZER_SECRET, true, { :algorithm => JWT_ALGORITHM }
-    JSON.parse(data[0]).inject({}){|h,(k,v)| h[k.to_sym] = v; h}
+    data[0].inject({}){|h,(k,v)| h[k.to_sym] = v; h}
   end
 
   def generate_url(opts)
