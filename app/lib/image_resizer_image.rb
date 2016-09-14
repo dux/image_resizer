@@ -11,8 +11,13 @@ class ImageResizerImage
     @original = "#{ROOT}/cache/originals/#{md5(@image)}.#{@ext}"
   end
 
+  def run(what)
+    puts what
+    system "#{what} 2>&1"
+  end
+
   def download(target=nil)
-    `curl '#{@image}' --create-dirs -s -o '#{@original}'` unless File.exists?(@original)
+    run "curl '#{@image}' --create-dirs -s -o '#{@original}'" unless File.exists?(@original)
 
     if dir = target.dup
       dir.gsub!(/\/[^\/]+$/,'')
@@ -32,7 +37,7 @@ class ImageResizerImage
 
     unless File.exists?(resized)
       download resized
-      `#{convert_base} -resize #{size}x '#{resized}'`
+      run "#{convert_base} -resize #{size}x '#{resized}'"
     end
     resized
   end
@@ -43,7 +48,7 @@ class ImageResizerImage
     unless File.exists?(resized)
       download resized
       # raise StandardError, "convert '#{@original}' -quality #{@quality} -resize x#{size} '#{resized}'"
-      `#{convert_base} -resize x#{size} '#{resized}'`
+      run "#{convert_base} -resize x#{size} '#{resized}'"
     end
     resized
   end
@@ -59,10 +64,10 @@ class ImageResizerImage
 
       if y_offset
         # crop with offset, without resize
-        `#{convert_base} -crop #{width}x#{height}+#{x_offset}+#{y_offset} -gravity #{gravity} -extent #{width}x#{height} #{cropped}`
+        run "#{convert_base} -crop #{width}x#{height}+#{x_offset}+#{y_offset} -gravity #{gravity} -extent #{width}x#{height} #{cropped}"
       else
         # regular resize crop
-        `#{convert_base} -resize #{width}x#{height}^ -gravity #{gravity} -extent #{width}x#{height} #{cropped}`
+        run "#{convert_base} -resize #{width}x#{height}^ -gravity #{gravity} -extent #{width}x#{height} #{cropped}"
       end
     end
     cropped
