@@ -16,12 +16,12 @@ module ImageResizerEncoder
 
   def unpack(text)
     data = JWT.decode text, RESIZER_SECRET, true, { :algorithm => JWT_ALGORITHM }
-    # raise StandardError, data[0]
     data[0].inject({}){|h,(k,v)| h[k.to_sym] = v; h}
   end
 
   def generate_url(opts)
     ext = opts[:image].split('.').last
+    opts[:image].gsub!(' ', '%20')
     ext = 'jpg' if ext.to_s.length < 3 && ext.to_s.length > 4
     "#{RESIZER_URL}/r/#{pack(opts)}.#{ext}"
   end

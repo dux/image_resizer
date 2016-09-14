@@ -67,7 +67,7 @@ class ImageResizer
 
     url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}/r/#{ImageResizerEncoder.pack(opts, secret)}.jpg"
 
-    return %[<html><head></head><body><h3>On server</h3><pre>ResizePacker.generate_url(#{JSON.pretty_generate(opts)})</pre>
+    return %[<html><head></head><body><h3>On server</h3><pre>ResizePacker.url(#{JSON.pretty_generate(opts)})</pre>
       <hr />
       <h3>Will output</h3>
       <a href="#{url}">#{url}</a></body></html>]
@@ -84,7 +84,7 @@ class ImageResizer
     # recieved packed string
     if data = request.path.split('/')[2]
       data.sub!(/\.\w{3,4}$/,'')
-      opts = ImageResizerEncoder.unpack(data) rescue Proc.new { return 'error: Bad secret token or other encoging error.' }.call
+      opts = ImageResizerEncoder.unpack(data) rescue Proc.new { return "jwt error: #{$!.message}" }.call
     end
 
     # if :unsafe recieved in packed string, allow unsafe image resize

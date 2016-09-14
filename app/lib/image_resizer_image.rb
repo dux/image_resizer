@@ -49,13 +49,21 @@ class ImageResizerImage
   end
 
   def crop(size, gravity)
-    width, height = size.to_s.downcase.split('x')
+    size.gsub!(' ','+')
+    width, height, x_offset, y_offset = size.to_s.downcase.split(/[x\+]/)
     height ||= width
     raise 'Image to large' if width.to_i > 1500 || height.to_i > 1500
-    cropped = "#{ROOT}/cache/croped/#{width}x#{height}-q#{@quality}-#{md5(@image)}.#{@ext}"
+    cropped = "#{ROOT}/cache/croped/#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
     unless File.exists?(cropped)
       download cropped
-      `#{convert_base} -resize #{width}x#{height}^ -gravity #{gravity} -extent #{width}x#{height} #{cropped}`
+
+      if y_offset
+        # crop with offset, without resize
+        `#{convert_base} -crop #{width}x#{height}+#{x_offset}+#{y_offset} -gravity #{gravity} -extent #{width}x#{height} #{cropped}`
+      else
+        # regular resize crop
+        `#{convert_base} -resize #{width}x#{height}^ -gravity #{gravity} -extent #{width}x#{height} #{cropped}`
+      end
     end
     cropped
   end
