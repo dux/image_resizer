@@ -122,6 +122,17 @@ class ImageResizer
       file = img.crop(crop_size, gravity)
     end
 
+    unless File.exist?(file)
+      data = File.read(img.original)
+      response.headers['Content-Type'] = "text/html" if data.index('</body>')
+      if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
+        File.unlink(img.original)
+        return 'Bad cache deleted, refresh again.'
+      end
+
+      return data
+    end
+
     data = File.read file
 
     response.headers['Content-Type'] = "image/#{ext}"
