@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 
+# REMOTE_SERVER='user@1.2.3.4'
+# REMOTE_PASS='pass'
+# REMOTE_PATH='/path/to/project'
+
 require 'colorize'
 require 'dotenv'
 
