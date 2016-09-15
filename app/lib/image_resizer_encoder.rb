@@ -9,6 +9,8 @@ module ImageResizerEncoder
   RESIZER_SECRET = ENV['RESIZER_SECRET'] || 'secret'
   RESIZER_URL    = ENV['RESIZER_URL']    || 'http://localhost:9292'
 
+  p RESIZER_SECRET
+
   def pack(data, secret=nil)
     secret ||= RESIZER_SECRET
     JWT.encode data, secret, JWT_ALGORITHM

@@ -125,7 +125,7 @@ class ImageResizer
     unless File.exist?(file)
       data = File.read(img.original)
       response.headers['Content-Type'] = "text/html" if data.index('</body>')
-      if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
+      if request.env['HTTP_CACHE_CONTROL'] == 'no-cache' # && HTTP_REFERER EMPTY
         File.unlink(img.original)
         return 'Bad cache deleted, refresh again.'
       end

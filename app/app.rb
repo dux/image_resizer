@@ -5,6 +5,8 @@ require 'json'
 require 'base64'
 require 'openssl'
 
+Dotenv.load
+
 class Object
   def r(what=nil)
     raise StandardError, what
