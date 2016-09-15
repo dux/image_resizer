@@ -32,10 +32,13 @@ def sudo(user, what=nil)
   else
     what = user
   end
-  remote "echo #{config(:ssh_pass)} | sudo -S #{what}"
+  remote "echo #{config(:remote_pass)} | sudo -S #{what}"
 end
 
 ###
 
-remote 'git pull'
+remote 'git reset --hard; git pull'
+
+sudo 'service nginx restart'
+
 
