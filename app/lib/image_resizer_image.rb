@@ -1,14 +1,16 @@
 class ImageResizerImage
   attr_reader :ext, :image, :original, :resized
 
-  def initialize(image, quality=80)
+  def initialize(image, quality=80, reload=nil)
     @image = image
     @ext = image.split('.').reverse[0].to_s
     @ext = 'jpg' unless @ext.length > 2 && @ext.length < 5
     @ext = 'jpg' if @ext == 'jpeg'
     @ext = @ext.downcase
-    @quality = quality < 10 ? 80 : quality
+    @quality  = quality < 10 ? 80 : quality
     @original = "#{ROOT}/cache/originals/#{md5(@image)}.#{@ext}"
+    @reload   = reload
+    File.unlink(@original) if @reload && File.exist?(@original)
   end
 
   def run(what)
@@ -34,6 +36,7 @@ class ImageResizerImage
 
   def resize_width(size)
     resized = "#{ROOT}/cache/resized/w_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
+    File.unlink(resized) if @reload && File.exist?(@original)
 
     unless File.exists?(resized)
       download resized
@@ -44,6 +47,7 @@ class ImageResizerImage
 
   def resize_height(size)
     resized = "#{ROOT}/cache/resized/h_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
+    File.unlink(resized) if @reload && File.exist?(@original)
 
     unless File.exists?(resized)
       download resized
@@ -59,6 +63,11 @@ class ImageResizerImage
     height ||= width
     raise 'Image to large' if width.to_i > 1500 || height.to_i > 1500
     cropped = "#{ROOT}/cache/croped/#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
+
+    ap 123
+
+    File.unlink(cropped) if @reload && File.exist?(cropped)
+
     unless File.exists?(cropped)
       download cropped
 

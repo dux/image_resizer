@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-bundle exec rerun --pattern="*.rb" "puma"
+rerun --pattern="*.rb" "puma -p 3000"

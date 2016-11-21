@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    colorize (0.8.1)
     dotenv (2.1.1)
     ffi (1.9.14)
     json (2.0.2)
@@ -22,6 +23,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  colorize
   dotenv
   json
   jwt

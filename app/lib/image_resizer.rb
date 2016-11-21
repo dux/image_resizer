@@ -24,7 +24,7 @@ class ImageResizer
     @params = @request.params.keys.inject({}){|h,k| h[k.to_sym] = @request.params[k]; h }
     @md5 = Digest::MD5.hexdigest @params.to_json
 
-    if request.env['HTTP_IF_NONE_MATCH'] == @md5
+    if request.env['HTTP_IF_NONE_MATCH'] == @md5 && !@request.params[:reload]
       response.status = 304
       response.write 'not-modified'
       return
@@ -82,7 +82,7 @@ class ImageResizer
     opts = {}
 
     # recieved packed string
-    if data = request.path.split('/')[2]
+    if data = request.path.split('/').last
       data.sub!(/\.\w{3,4}$/,'')
       opts = ImageResizerEncoder.unpack(data) rescue Proc.new { return "jwt error: #{$!.message}" }.call
     end
@@ -107,7 +107,9 @@ class ImageResizer
     resize_height = opts[:height].to_i
     crop_size     = opts[:crop]
 
-    img = ImageResizerImage.new(image, opts[:q].to_i)
+    opts[:q] ||= 85
+
+    img = ImageResizerImage.new(image, opts[:q].to_i, params[:reload] == 'true')
     ext = img.ext
 
     if resize_width > 0
