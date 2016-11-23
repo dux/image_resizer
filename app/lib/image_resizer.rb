@@ -83,8 +83,8 @@ class ImageResizer
 
     # recieved packed string
     # /r/{some-name}/hash.jpg
-    # /r/hash__{some-name}.jpg # note double underscore
-    if data = request.path.split('/').last.split('__').first
+    # /r/hash~{some-name}.jpg # tilde
+    if data = request.path.split('/').last.split('~').first
       data.sub!(/\.\w{3,4}$/,'')
       opts = ImageResizerEncoder.unpack(data) rescue Proc.new { return "jwt error: #{$!.message}" }.call
     end
