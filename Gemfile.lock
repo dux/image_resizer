@@ -5,7 +5,7 @@ GEM
     dotenv (2.1.1)
     ffi (1.9.14)
     json (2.0.2)
-    jwt (1.5.4)
+    jwt (1.5.6)
     listen (3.1.5)
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
@@ -26,10 +26,10 @@ DEPENDENCIES
   colorize
   dotenv
   json
-  jwt
+  jwt (= 1.5.6)
   puma
   rack
   rerun
 
 BUNDLED WITH
-   1.12.5
+   1.13.6

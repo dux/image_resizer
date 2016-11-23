@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rack'
 gem 'json'
-gem 'jwt'
+gem 'jwt', '1.5.6'
 gem 'dotenv'
 gem 'puma'
 gem 'colorize', require: false

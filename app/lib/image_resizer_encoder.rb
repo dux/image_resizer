@@ -15,6 +15,7 @@ module ImageResizerEncoder
   end
 
   def unpack(text)
+    r text
     data = JWT.decode text, RESIZER_SECRET, true, { :algorithm => JWT_ALGORITHM }
     data[0].inject({}){|h,(k,v)| h[k.to_sym] = v; h}
   end
