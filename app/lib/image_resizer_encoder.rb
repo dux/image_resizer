@@ -19,11 +19,21 @@ module ImageResizerEncoder
     data[0].inject({}){|h,(k,v)| h[k.to_sym] = v; h}
   end
 
-  def generate_url(opts)
-    ext = opts[:image].split('.').last
-    opts[:image].gsub!(' ', '%20')
-    ext = 'jpg' if ext.to_s.length < 3 && ext.to_s.length > 4
-    "#{RESIZER_URL}/r/#{pack(opts)}.#{ext}"
+  def url(opts)
+    # return opts[:image]
+
+    ext = opts[:image].split('.').reverse[0].to_s.downcase
+    ext = 'jpg' unless ['jpg', 'jpeg', 'gif', 'png'].index(ext)
+
+    name = opts.delete(:name)
+    if name
+      name = '~%s' % name.to_s.gsub(/[^\w\-\.]+/,'_')[0,30]
+      name = name.sub(/\.\w{3,4}$/,'')
+    end
+
+    enc = JWT.encode opts, RESIZER_SECRET, JWT_ALGORITHM
+
+    '%s/r/%s%s.%s' % [RESIZER_URL, enc, name, ext]
   end
 
 end

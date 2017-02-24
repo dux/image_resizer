@@ -4,11 +4,13 @@ gem 'rack'
 gem 'json'
 gem 'jwt', '1.5.6'
 gem 'dotenv'
-gem 'puma'
-gem 'colorize', require: false
 
 group :development do
+  gem 'puma'
+  gem 'colorize'
+  gem 'awesome_print'
   gem 'rerun'
+  gem 'pry'
 end
 
 group :test do

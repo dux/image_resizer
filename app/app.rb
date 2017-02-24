@@ -5,6 +5,7 @@ require 'json'
 require 'base64'
 require 'openssl'
 require 'dotenv'
+require 'bundler/setup'
 
 Dotenv.load
 

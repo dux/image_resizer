@@ -113,8 +113,6 @@ class ImageResizer
     opts[:q] = params[:q].to_i
     opts[:q] = 85 if opts[:q] < 10
 
-    r image
-
     img = ImageResizerImage.new(image, opts[:q], params[:reload] == 'true')
     ext = img.ext
 

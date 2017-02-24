@@ -21,7 +21,7 @@ Used JSON Web Tokens for URL encoding. https://jwt.io
 use ResizePacker class for resizeing on server
 
 * ResizePacker.pack({ image:'http://some-destinat.io/n.jpg', width:100 })
-* ResizePacker.generate_url({ image:'http://some-destinat.io/n.jpg', width:100 })
+* ResizePacker.url({ image:'http://some-destinat.io/n.jpg', width:100 })
 
 ## Final form is
 
