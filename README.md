@@ -30,17 +30,17 @@ http://host/r/#{JWT.encode(hash)}
 ```
 
 ```
-http://localhost:9292/r/5x5g4maheKCb0_fqBmwLiihTgc8iduV4gCQSyU3gF9i7H6gPjDdrDjlNjUb9ybJRSwHNo2jQ9Z0aOrSn-KoRvFk5cS9Pp_MlOiqyXQJ_auS0hQS_22jO2af09xueWdDOIXnukBvZcvx322E52wUDbL9cwxAHiRzrpaTgG7EJ8iqI9zALF7_M0UfLDCFrtsKVRHLymPEQlQhqEzOnxQ-G4w==.jpg
+http://localhost:4000/r/5x5g4maheKCb0_fqBmwLiihTgc8iduV4gCQSyU3gF9i7H6gPjDdrDjlNjUb9ybJRSwHNo2jQ9Z0aOrSn-KoRvFk5cS9Pp_MlOiqyXQJ_auS0hQS_22jO2af09xueWdDOIXnukBvZcvx322E52wUDbL9cwxAHiRzrpaTgG7EJ8iqI9zALF7_M0UfLDCFrtsKVRHLymPEQlQhqEzOnxQ-G4w==.jpg
 ```
 
 
 ### localhost examples
 
-http://0.0.0.0:9292/r?crop=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
+http://0.0.0.0:4000/r?crop=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
 
-http://0.0.0.0:9292/r?crop=200x300&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
+http://0.0.0.0:4000/r?crop=200x300&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
 
-http://0.0.0.0:9292/r?width=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
+http://0.0.0.0:4000/r?width=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
 
 
 ### how to run?

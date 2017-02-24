@@ -64,8 +64,6 @@ class ImageResizerImage
     raise 'Image to large' if width.to_i > 1500 || height.to_i > 1500
     cropped = "#{ROOT}/cache/croped/#{size}-q#{@quality}-#{md5(@image)}.#{@ext}"
 
-    ap 123
-
     File.unlink(cropped) if @reload && File.exist?(cropped)
 
     unless File.exists?(cropped)

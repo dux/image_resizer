@@ -22,7 +22,7 @@
 
         document.getElementById('error').innerHTML = '';
 
-        for (el of ['width', 'height', 'crop', 'crop_2', 'image', 'secret']) {
+        for (el of ['width', 'height', 'crop', 'crop_2', 'image', 'q', 'secret']) {
           val = document.getElementById(el).value;
           if (val) opts[el] = val
         }
@@ -92,7 +92,7 @@
   </tr>
   <tr>
     <td class="l">Image URL</td>
-    <td><input id="image" style="width:300px;" value="http://www.baumaschinenvergleich.net/sites/default/files/baumaschinenvergleich/baumaschinen/kettenbagger/doosan-dx180lc-3.jpg" /></td>
+    <td><input id="image" style="width:300px;" value="http://i.imgur.com/krurDGE.jpg" /></td>
   </tr>
   <tr>
     <td class="l">Width</td>
@@ -101,6 +101,10 @@
   <tr>
     <td class="l">Height</td>
     <td><input id="height" /></td>
+  </tr>
+  <tr>
+    <td class="l">Quality</td>
+    <td><input id="q" /></td>
   </tr>
   <tr>
     <td class="l">Crop</td>
@@ -112,7 +116,7 @@
   </tr>
   <tr>
     <td class="l">Secret</td>
-    <td><input id="secret" />
+    <td><input id="secret"  value="secret" />
   </tr>
   <tr>
     <td class="l">opts</td>

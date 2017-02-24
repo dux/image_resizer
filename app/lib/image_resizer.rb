@@ -84,7 +84,8 @@ class ImageResizer
     # recieved packed string
     # /r/{some-name}/hash.jpg
     # /r/hash~{some-name}.jpg # tilde
-    if data = request.path.split('/').last.split('~').first
+    unless params[:image]
+      data = request.path.split('/').last.split('~').first
       data.sub!(/\.\w{3,4}$/,'')
       opts = ImageResizerEncoder.unpack(data) rescue Proc.new { return "jwt error: #{$!.message}" }.call
     end
@@ -109,9 +110,12 @@ class ImageResizer
     resize_height = opts[:height].to_i
     crop_size     = opts[:crop]
 
-    opts[:q] ||= 85
+    opts[:q] = params[:q].to_i
+    opts[:q] = 85 if opts[:q] < 10
 
-    img = ImageResizerImage.new(image, opts[:q].to_i, params[:reload] == 'true')
+    r image
+
+    img = ImageResizerImage.new(image, opts[:q], params[:reload] == 'true')
     ext = img.ext
 
     if resize_width > 0

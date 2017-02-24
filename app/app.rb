@@ -4,8 +4,11 @@ require 'digest'
 require 'json'
 require 'base64'
 require 'openssl'
+require 'dotenv'
 
 Dotenv.load
+
+Bundler.require
 
 class Object
   def r(what=nil)
