@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'awesome_print'
+
+require './app/app'
+
+Signal.trap('INT') { puts; exit }
+
+begin
+  require 'pry'
+  AwesomePrint.pry!
+  Pry
+rescue LoadError
+  puts 'pry not found, starting irb'.red
+  require 'irb'
+  IRB
+end.start
