@@ -4,7 +4,7 @@ describe 'image resizer' do
 
   let(:params) {
     {
-      image: 'http%3A//i.imgur.com/krurDGE.jpg',
+      image: 'http://i.imgur.com/krurDGE.jpg',
       crop: 200,
       secret: ENV.fetch('RESIZER_SECRET')
     }
@@ -12,11 +12,19 @@ describe 'image resizer' do
 
   it 'shoud generate pack url' do
     url = ImageResizerEncoder.pack(params)
-    expect(url).to eq('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbWFnZSI6Imh0dHAlM0EvL2kuaW1ndXIuY29tL2tydXJER0UuanBnIiwiY3JvcCI6MjAwLCJzZWNyZXQiOiJzZWNyZXQifQ.VLckUvwcSmO-j7hbz_-wy9TO8QPGlYu9UlP_bdkOVD4')
+    expect(url.length > 50).to eq(true)
   end
 
   it 'shoud resize image' do
+    img     = ImageResizerImage.new image: params[:image], quality: 80, reload: true
+    resized = img.resize_width(100)
 
+    expect(File.exists?(resized)).to eq(true)
+
+    info = `identify #{resized}`.split(' ')
+    size = info[3].split('x').first.to_i
+
+    expect(size).to eq 100
   end
 end
 
