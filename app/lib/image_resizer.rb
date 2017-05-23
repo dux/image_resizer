@@ -113,7 +113,11 @@ class ImageResizer
     opts[:q] = params[:q].to_i
     opts[:q] = 85 if opts[:q] < 10
 
-    img = ImageResizerImage.new(image, opts[:q], params[:reload] == 'true')
+    reload = false
+    reload = true if params[:reload]
+    # reload = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
+
+    img = ImageResizerImage.new image: image, quality: opts[:q], reload: reload
     ext = img.ext
 
     if resize_width > 0
@@ -126,17 +130,6 @@ class ImageResizer
       gravity = params[:gravity].to_s.downcase
       gravity = 'North' if gravity.length == 0
       file = img.crop(crop_size, gravity)
-    end
-
-    unless File.exist?(file)
-      data = File.read(img.original)
-      response.headers['Content-Type'] = "text/html" if data.index('</body>')
-      if request.env['HTTP_CACHE_CONTROL'] == 'no-cache' # && HTTP_REFERER EMPTY
-        File.unlink(img.original)
-        return 'Bad cache deleted, refresh again.'
-      end
-
-      return data
     end
 
     data = File.read file
