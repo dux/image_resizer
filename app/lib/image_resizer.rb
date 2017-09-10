@@ -5,7 +5,7 @@ require 'logger'
 class ImageResizer
 
   ICON     = File.read('./public/favicon.ico')
-  LOG_FILE = './tmp/%s.log' % ENV['RACK_ENV']
+  LOG_FILE = './log/%s.log' % ENV['RACK_ENV']
   LOGGER   = Logger.new(LOG_FILE, 'weekly')
   LOGGER.datetime_format = '%F %R'
 
