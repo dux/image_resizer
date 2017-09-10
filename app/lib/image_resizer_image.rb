@@ -15,6 +15,12 @@ class ImageResizerImage
     File.unlink(@src_in_cache) if @reload && File.exist?(@src_in_cache)
   end
 
+  def md5(data)
+    ret = Digest::MD5.hexdigest data
+    ret[2,0] = ''
+    ret
+  end
+
   def run(what)
     # puts what
     system "#{what} 2>&1"

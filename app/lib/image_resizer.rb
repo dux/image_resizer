@@ -12,7 +12,7 @@ class ImageResizer
   class << self
     def call env
       app = new env
-      data = app.router
+      app.router
       app.deliver
     end
 
@@ -26,12 +26,6 @@ class ImageResizer
   def initialize env
     @request  = Rack::Request.new env
     @response = Rack::Response.new
-  end
-
-  def error msg
-    @has_error = true
-    @response.body   = msg
-    @response.status = 500
   end
 
   def from_http_cache
@@ -51,8 +45,7 @@ class ImageResizer
     # /r/hash~{some-name}.jpg # tilde
     data = @path[1].split('/').last.split('~').first
     data = data.sub(/\.\w{3,4}$/,'')
-    opts = ImageResizerEncoder.unpack(data)
-    opts rescue error("jwt error: #{$!.message}")
+    ImageResizerEncoder.unpack(data)
   end
 
   def router
@@ -84,7 +77,15 @@ class ImageResizer
         File.read('./public/index.html')
     end
 
-    @response.write data unless @has_error
+    @response.write data
+  rescue
+    # raise $! if is_local
+
+    msg = '%s (%s)' % [$!.message, $!.class]
+    self.class.log 'ERROR: %s - %s' % [msg, @request.url]
+
+    @response.write msg
+    @response.status = 500
   end
 
   def deliver
