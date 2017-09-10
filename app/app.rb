@@ -26,3 +26,5 @@ end
 
 [:resizer, :resizer_encoder, :resizer_image].each { |lib| require_relative "./lib/image_#{lib}" }
 
+`find ./cache -depth -type f -atime +2 -delete`
+
