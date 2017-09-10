@@ -22,7 +22,7 @@
 
         document.getElementById('error').innerHTML = '';
 
-        for (el of ['width', 'height', 'crop', 'crop_2', 'image', 'q', 'secret']) {
+        for (el of ['width', 'height', 'crop', 'crop_2', 'image', 'q']) {
           val = document.getElementById(el).value;
           if (val) opts[el] = val
         }
@@ -35,9 +35,6 @@
           return inform('Image URL is required');
         }
 
-        if (val = document.getElementById('unsafe').checked) {
-          opts.unsafe = 'true'
-        }
 
         if (!opts.width && !opts.height && !opts.crop) {
           return inform('width, height or crop is required');
@@ -68,7 +65,6 @@
 <h2>Options</h2>
 
 <ul>
-  <li><b>unsafe</b> - true - allow with, height or crop as image parameter</li>
   <li><b>q</b> - quality - 10..95</li>
   <li><b>gravity</b> crop gravity - North:default, East, West, South</li>
 
@@ -109,14 +105,6 @@
   <tr>
     <td class="l">Crop</td>
     <td><input id="crop" placeholder="200" /> x <input id="crop_2" placeholder="0" /></td>
-  </tr>
-  <tr>
-    <td class="l">Unsafe?</td>
-    <td><input id="unsafe" type="checkbox" />
-  </tr>
-  <tr>
-    <td class="l">Secret</td>
-    <td><input id="secret"  value="secret" />
   </tr>
   <tr>
     <td class="l">opts</td>

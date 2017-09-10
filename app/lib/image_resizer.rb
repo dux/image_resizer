@@ -1,38 +1,78 @@
 class ImageResizer
 
-  attr_accessor :request, :response, :params
+  ICON = File.read('./public/favicon.ico')
 
   class << self
-    def call(env)
-      app = new(env)
-      app.router
+    def call env
+      app = new env
+      data = app.router
       app.deliver
     end
   end
 
   ###
 
-  def initialize(env)
-    @request  = Rack::Request.new(env)
+  def initialize env
+    @request  = Rack::Request.new env
     @response = Rack::Response.new
   end
 
+  def error msg
+    @has_error = true
+    @response.body   = msg
+    @response.status = 500
+  end
+
+  def from_http_cache
+    @md5 = Digest::MD5.hexdigest @path[1]
+
+    if @request.env['HTTP_IF_NONE_MATCH'] == @md5 && !@request.params[:reload]
+      @response.status = 304
+      @response.write 'not-modified'
+      return true
+    else
+      false
+    end
+  end
+
+  def unpack_path
+    # /r/{some-name}/hash.jpg
+    # /r/hash~{some-name}.jpg # tilde
+    data = @path[1].split('/').last.split('~').first
+    data = data.sub(/\.\w{3,4}$/,'')
+    ap data
+    opts = ImageResizerEncoder.unpack(data)
+    opts rescue error("jwt error: #{$!.message}")
+  end
+
   def router
-    root = @request.path.split('/')[1]
-    return get(:root) unless root
+    @path = @request.path.split('/').drop(1)
 
-    @params = @request.params.keys.inject({}){|h,k| h[k.to_sym] = @request.params[k]; h }
-    @md5 = Digest::MD5.hexdigest @params.to_json
+    @params = if @path[1]
+      # if we have hashed paramteres
+      return if from_http_cache
 
-    if request.env['HTTP_IF_NONE_MATCH'] == @md5 && !@request.params[:reload]
-      response.status = 304
-      response.write 'not-modified'
-      return
+      # recieved packed string
+      unpack_path
+    elsif is_local
+      @request.params.inject({}) { |h,(k,v)| h[k.to_sym] = v; h }
     end
 
-    root = 'resize' if  root[0, 1] == 'r'
+    # routing
+    data = case @path[0].to_s[0, 1]
+      when 'f'
+        @response.headers["Content-Length"] = ICON.length
+        @response.headers["Content-Type"]   = "image/vnd.microsoft.icon"
+        ICON
+      when 'r'
+        get_resize
+      when 'p'
+        get_pack if is_local
+      else
+        get_root
+    end
 
-    get(root)
+    @response.write data unless @has_error
   end
 
   def deliver
@@ -42,32 +82,19 @@ class ImageResizer
   end
 
   def is_local
-    ['127.0.0.1','0.0.0.0'].index(request.ip)
-  end
-
-  def get(what)
-    method = "get_#{what}"
-    if respond_to?(method)
-      @response.write send(method)
-    else
-      @response.status = 400
-      @response.write "Request :#{what} is not supported"
-    end
+    ['127.0.0.1','0.0.0.0'].index(@request.ip)
   end
 
   ### ROTUES
 
   def get_root
-    File.read('./app/views/index.html')
+    File.read('./public/index.html')
   end
 
   def get_pack
-    opts = [:width, :height, :crop, :image].inject({}) { |h, k| h[k] = params[k] if params[k]; h }
-    secret = params[:secret] || '-'
+    url = "#{@request.env['rack.url_scheme']}://#{@request.env['HTTP_HOST']}/r/#{ImageResizerEncoder.pack(@params)}.jpg"
 
-    url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}/r/#{ImageResizerEncoder.pack(opts, secret)}.jpg"
-
-    return %[<html><head></head><body><h3>On server</h3><pre>ResizePacker.url(#{JSON.pretty_generate(opts)})</pre>
+    return %[<html><head></head><body><h3>On server</h3><pre>ImageResizerEncoder.url(#{JSON.pretty_generate(@params)})</pre>
       <hr />
       <h3>Will output</h3>
       <a href="#{url}">#{url}</a></body></html>]
@@ -77,47 +104,26 @@ class ImageResizer
   # width: width of image
   # height: height of image
   # crop: crop area of image
-  # unsafe: allow width, height and crop to be defined in params
   def get_resize
-    opts = {}
-
-    # recieved packed string
-    # /r/{some-name}/hash.jpg
-    # /r/hash~{some-name}.jpg # tilde
-    unless params[:image]
-      data = request.path.split('/').last.split('~').first
-      data.sub!(/\.\w{3,4}$/,'')
-      opts = ImageResizerEncoder.unpack(data) rescue Proc.new { return "jwt error: #{$!.message}" }.call
-    end
-
-    # if :unsafe recieved in packed string, allow unsafe image resize
-    if opts[:unsafe] == 'true' || is_local
-      for key in [:width, :height, :crop]
-        opts[key] = params[key] if params[key]
-      end
-    end
-
-    opts[:image] ||= params[:image] if is_local
-
     # we need to have at least one sizeing attribute
-    # raise StandardError, opts[:width]
-    return "Missing :width, :height or :crop parameter" unless opts[:width] || opts[:height] || opts[:crop]
+    # raise StandardError, @params[:width]
+    return "Missing :width, :height or :crop parameter" unless @params[:width] || @params[:height] || @params[:crop]
 
-    image = opts[:image]
+    image = @params[:image]
     return '[image] not defined' unless image.to_s.length > 1
 
-    resize_width  = opts[:width].to_i
-    resize_height = opts[:height].to_i
-    crop_size     = opts[:crop]
+    resize_width  = @params[:width].to_i
+    resize_height = @params[:height].to_i
+    crop_size     = @params[:crop]
 
-    opts[:q] = params[:q].to_i
-    opts[:q] = 85 if opts[:q] < 10
+    @params[:q] = @params[:q].to_i
+    @params[:q] = 85 if @params[:q] < 10
 
     reload = false
-    reload = true if params[:reload]
+    reload = true if @params[:reload]
     # reload = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
 
-    img = ImageResizerImage.new image: image, quality: opts[:q], reload: reload
+    img = ImageResizerImage.new image: image, quality: @params[:q], reload: reload
     ext = img.ext
 
     if resize_width > 0
@@ -134,12 +140,14 @@ class ImageResizer
 
     data = File.read file
 
-    response.headers['Content-Type'] = "image/#{ext}"
-    response.headers['Cache-Control'] = 'public, max-age=10000000, no-transform'
-    response.headers['ETag'] = @md5
-    response.headers['Connection'] = 'keep-alive'
-    response.headers['Content-Disposition'] = %[inline; filename="#{@md5}.#{ext}"]
-    response.headers['Connection'] = 'keep-alive'
+    @md5 ||= Digest::MD5.hexdigest data
+
+    @response.headers['Content-Type'] = "image/#{ext}"
+    @response.headers['Cache-Control'] = 'public, max-age=10000000, no-transform'
+    @response.headers['ETag'] = @md5
+    @response.headers['Connection'] = 'keep-alive'
+    @response.headers['Content-Disposition'] = %[inline; filename="#{@md5}.#{ext}"]
+    @response.headers['Connection'] = 'keep-alive'
 
     data
   end

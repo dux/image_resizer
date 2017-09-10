@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'awesome_print'
 gem 'rack'
 gem 'json'
 gem 'jwt', '1.5.6'

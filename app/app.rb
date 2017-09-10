@@ -30,7 +30,5 @@ def md5(data)
   ret
 end
 
-# delete all cache files which where not accessd in 2 days
-# `find ./cache -depth -type f -atime +2 -delete`
-
 [:resizer, :resizer_encoder, :resizer_image].each { |lib| require_relative "./lib/image_#{lib}" }
+
