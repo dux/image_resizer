@@ -1,12 +1,23 @@
+ENV['RACK_ENV'] ||= 'developmnet'
+
+require 'logger'
+
 class ImageResizer
 
-  ICON = File.read('./public/favicon.ico')
+  ICON     = File.read('./public/favicon.ico')
+  LOG_FILE = './tmp/%s.log' % ENV['RACK_ENV']
+  LOGGER   = Logger.new(LOG_FILE, 'weekly')
+  LOGGER.datetime_format = '%F %R'
 
   class << self
     def call env
       app = new env
       data = app.router
       app.deliver
+    end
+
+    def log text
+      LOGGER.info text
     end
   end
 
@@ -40,7 +51,6 @@ class ImageResizer
     # /r/hash~{some-name}.jpg # tilde
     data = @path[1].split('/').last.split('~').first
     data = data.sub(/\.\w{3,4}$/,'')
-    ap data
     opts = ImageResizerEncoder.unpack(data)
     opts rescue error("jwt error: #{$!.message}")
   end
@@ -59,17 +69,19 @@ class ImageResizer
     end
 
     # routing
-    data = case @path[0].to_s[0, 1]
-      when 'f'
+    data = case @path[0]
+      when 'favicon.ico'
         @response.headers["Content-Length"] = ICON.length
         @response.headers["Content-Type"]   = "image/vnd.microsoft.icon"
         ICON
       when 'r'
         get_resize
-      when 'p'
+      when 'pack'
         get_pack if is_local
+      when 'log'
+        File.read LOG_FILE
       else
-        get_root
+        File.read('./public/index.html')
     end
 
     @response.write data unless @has_error
@@ -87,10 +99,6 @@ class ImageResizer
 
   ### ROTUES
 
-  def get_root
-    File.read('./public/index.html')
-  end
-
   def get_pack
     url = "#{@request.env['rack.url_scheme']}://#{@request.env['HTTP_HOST']}/r/#{ImageResizerEncoder.pack(@params)}.jpg"
 
@@ -106,15 +114,16 @@ class ImageResizer
   # crop: crop area of image
   def get_resize
     # we need to have at least one sizeing attribute
-    # raise StandardError, @params[:width]
-    return "Missing :width, :height or :crop parameter" unless @params[:width] || @params[:height] || @params[:crop]
 
     image = @params[:image]
     return '[image] not defined' unless image.to_s.length > 1
 
-    resize_width  = @params[:width].to_i
-    resize_height = @params[:height].to_i
-    crop_size     = @params[:crop]
+    resize_width, resize_height = @params[:size].to_s.split('x').map(&:to_i)
+    resize_width  ||= 0
+    resize_height ||= 0
+
+    return "Width and height from :size are 0" unless resize_width > 10 || resize_height > 10
+    return 'Image to large' if resize_width > 1500 || resize_height > 1500
 
     @params[:q] = @params[:q].to_i
     @params[:q] = 85 if @params[:q] < 10
@@ -123,31 +132,31 @@ class ImageResizer
     reload = true if @params[:reload]
     # reload = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
 
-    img = ImageResizerImage.new image: image, quality: @params[:q], reload: reload
+    img = ImageResizerImage.new image: image, quality: @params[:q], reload: reload, is_local: is_local
     ext = img.ext
 
-    if resize_width > 0
-      return 'Image to large' if resize_width > 1500
-      file = img.resize_width(resize_width)
-    elsif resize_height > 0
-      return 'Image to large' if resize_height > 1500
-      file = img.resize_height(resize_height)
-    else
-      gravity = params[:gravity].to_s.downcase
+    file = if resize_width > 0 && resize_height > 0
+      gravity = @params[:gravity].to_s.downcase
       gravity = 'North' if gravity.length == 0
-      file = img.crop(crop_size, gravity)
+      img.crop(@params[:size], gravity)
+    elsif resize_width > 0
+      img.resize_width(resize_width)
+    elsif resize_height > 0
+      img.resize_height(resize_height)
+    else
+      raise '?'
     end
 
     data = File.read file
 
     @md5 ||= Digest::MD5.hexdigest data
 
-    @response.headers['Content-Type'] = "image/#{ext}"
-    @response.headers['Cache-Control'] = 'public, max-age=10000000, no-transform'
-    @response.headers['ETag'] = @md5
-    @response.headers['Connection'] = 'keep-alive'
+    @response.headers['ETag']                = @md5
+    @response.headers['Content-Type']        = "image/#{ext}"
+    @response.headers['Cache-Control']       = 'public, max-age=10000000, no-transform'
+    @response.headers['Connection']          = 'keep-alive'
     @response.headers['Content-Disposition'] = %[inline; filename="#{@md5}.#{ext}"]
-    @response.headers['Connection'] = 'keep-alive'
+    @response.headers['Connection']          = 'keep-alive'
 
     data
   end

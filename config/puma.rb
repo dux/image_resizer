@@ -6,11 +6,11 @@ port            4000
 Dir.mkdir 'tmp' unless Dir.exists?('tmp')
 
 if ENV['RACK_ENV'] == 'production'
-  daemonize true
+  # daemonize true
   threads 0, 32
   pidfile         './tmp/puma.pid'
   state_path      './tmp/puma.state'
-  stdout_redirect './tmp/puma.log', './tmp/puma_error.log'
+  stdout_redirect './tmp/puma_stdout', './tmp/puma_stderr'
 end
 
 Thread.new do

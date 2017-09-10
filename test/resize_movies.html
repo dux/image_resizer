@@ -9,10 +9,10 @@
 <p>Click on the image to see original image</p>
 <table>
   <tr>
-    <td>Resize to width</td><td><input type="text" id="r_width" value="200" /> <button onclick="draw_thumbs('width', document.getElementById('r_width').value)">Go!</button></td>
+    <td>Resize to width</td><td><input type="text" id="r_width" value="200" /> <button onclick="draw_thumbs(document.getElementById('r_width').value)">Go!</button></td>
   </tr>
   <tr>
-    <td>Crop to width-height</td><td><input id="r_crop" value="200x200" /> <button onclick="draw_thumbs('crop', document.getElementById('r_crop').value)">Go!</button></td>
+    <td>Crop to width-height</td><td><input id="r_crop" value="200x200" /> <button onclick="v=document.getElementById('r_crop').value; draw_thumbs(v+'x'+v)">Go!</button></td>
   </tr>
 </table>
 <br />
@@ -20,19 +20,25 @@
 <div id="target" onload="alert(1)"></div>
 <script>
 window.r_time = function() {
-  document.getElementById('total').innerHTML = (new Date() - window.start)/1000  
+  document.getElementById('total').innerHTML = (new Date() - window.start)/1000
 }
 
-window.draw_thumbs = function(schema, size) {
-  target = document.getElementById('target')
-  target.innerHTML = ''
-  window.start = new Date()
+window.r_host = 'http://0.0.0.0:4000/'
+
+window.draw_thumbs = function(size) {
+  var width = String(size).split('x')[0];
+  var target = document.getElementById('target');
+
+  target.innerHTML = '';
+
+  window.start = new Date();
+
   for (var i=0; i<100; i++) {
-    target.innerHTML += '<a href="'+imgs[i]+'"><img onload="r_time()" style="width:200px; -height:300px; border:1px solid #aaa; margin-right:10px; margin-bottom:10px;" src="http://0.0.0.0:9292/resize?'+schema+'='+size+'&image='+imgs[i]+'" /></a>'
+    target.innerHTML += '<a href="'+imgs[i]+'"><img onload="r_time()" style="width:'+width+'px; -height:300px; border:1px solid #aaa; margin-right:10px; margin-bottom:10px;" src="'+r_host+'r?size='+size+'&image='+imgs[i]+'" /></a>'
   }
 }
 
-draw_thumbs('crop', 200)
+draw_thumbs(200);
 </script>
 
 </body>
