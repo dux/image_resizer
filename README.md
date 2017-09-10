@@ -5,13 +5,13 @@ Fast and stable image resizer, written in Ruby
 
 Used JSON Web Tokens for URL encoding. https://jwt.io
 
-/resize
+/r
 
 * image = source image
-* width = integer
-* crop = 200 || 200x300
+* size  = width x height
+* q     = quality (10 - 100)
 
-/pack?image=foo&crop=bar
+/pack?image=foo&size=bar
 
 * just use pack insted of resize
 * render URL PACKED FOR PRODUCTION
@@ -36,9 +36,9 @@ http://localhost:4000/r/5x5g4maheKCb0_fqBmwLiihTgc8iduV4gCQSyU3gF9i7H6gPjDdrDjlN
 
 ### localhost examples
 
-http://0.0.0.0:4000/r?crop=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
+http://0.0.0.0:4000/r?size=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
 
-http://0.0.0.0:4000/r?crop=200x300&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
+http://0.0.0.0:4000/r?size=200x300&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
 
 http://0.0.0.0:4000/r?width=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
 
