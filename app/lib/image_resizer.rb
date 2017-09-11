@@ -72,9 +72,8 @@ class ImageResizer
       when 'log'
         File.read LOG_FILE
       when '.well-known'
-        File.read('./public/.well-known' % ENV.fetch('RACK_ENV'))
+        File.read './public/.well-known'
       else
-        .well-known
         File.read('./public/%s.html' % ENV.fetch('RACK_ENV'))
     end
 
