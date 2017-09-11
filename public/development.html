@@ -54,64 +54,63 @@
     </script>
 </head>
 <body>
-<h1>Ruby Rack image reizer by @dux</h1>
+  <h1>Ruby Rack image reizer by @dux</h1>
 
-<h2>Usage</h2>
-<pre>ResizeEncoder.url({ image:'', crop: x })</pre>
+  <h2>Usage</h2>
+  <pre>ResizeEncoder.url({ image:'', crop: x })</pre>
 
-<h2>Options</h2>
+  <h2>Options</h2>
 
-<ul>
-  <li><b>q</b> - quality - 10..95</li>
-  <li><b>gravity</b> crop gravity - North:default, East, West, South</li>
-  <li><b>image</b> - source image</li>
-  <li>
-    <b>size</b> - num || 200x300
-    <ul>
-      <li>200 => 200x200 - if yu send only one number, it becomes square crop</li>
-    </ul>
-  </li>
-</ul>
+  <ul>
+    <li><b>q</b> - quality - 10..95</li>
+    <li><b>gravity</b> crop gravity - North:default, East, West, South</li>
+    <li><b>image</b> - source image</li>
+    <li>
+      <b>size</b> - num || 200x300
+      <ul>
+        <li>200 => 200x200 - if yu send only one number, it becomes square crop</li>
+      </ul>
+    </li>
+  </ul>
 
-<h3 style="margin:50px 0 0 0;">Tester</h3>
+  <h3 style="margin:50px 0 0 0;">Tester</h3>
 
-<table>
-  <tr>
-    <td></td>
-    <td id="error"></td>
-  </tr>
-  <tr>
-    <td class="l">Image URL</td>
-    <td><input id="image" style="width:300px;" value="http://i.imgur.com/krurDGE.jpg" /></td>
-  </tr>
-  <tr>
-    <td class="l">Size (Width x Height)</td>
-    <td><input id="width" placeholder="200" /> x <input id="height" placeholder="0" /></td>
-  </tr>
-  <tr>
-    <td class="l">Quality</td>
-    <td><input id="q" /></td>
-  </tr>
-  <tr>
-    <td class="l">opts</td>
-    <td><div id="hash">...</div></td>
-  </tr>
-  <tr>
-    <td class="l">Live (only dev)</td>
-    <td><div id="live">...</div></td>
-  </tr>
-  <tr>
-    <td class="l">Pack</td>
-    <td><div id="pack">...</div></td>
-  </tr>
-  <tr>
-    <td></td>
-    <td><button onclick="open_url()">request</button>
-  </tr>
-</table>
+  <table>
+    <tr>
+      <td></td>
+      <td id="error"></td>
+    </tr>
+    <tr>
+      <td class="l">Image URL</td>
+      <td><input id="image" style="width:300px;" value="http://i.imgur.com/krurDGE.jpg" /></td>
+    </tr>
+    <tr>
+      <td class="l">Size (Width x Height)</td>
+      <td><input id="width" placeholder="200" /> x <input id="height" placeholder="0" /></td>
+    </tr>
+    <tr>
+      <td class="l">Quality</td>
+      <td><input id="q" /></td>
+    </tr>
+    <tr>
+      <td class="l">opts</td>
+      <td><div id="hash">...</div></td>
+    </tr>
+    <tr>
+      <td class="l">Live (only dev)</td>
+      <td><div id="live">...</div></td>
+    </tr>
+    <tr>
+      <td class="l">Pack</td>
+      <td><div id="pack">...</div></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><button onclick="open_url()">request</button>
+    </tr>
+  </table>
 
-<p>info: in development options can be sent as query string</p>
+  <p>info: in development options can be sent as query string</p>
 
 </body>
 </html>
-

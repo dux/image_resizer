@@ -8,8 +8,9 @@ require 'dotenv'
 require 'bundler/setup'
 
 Dotenv.load
-
 Bundler.require
+
+raise 'RACK_ENV not suported' unless ['production', 'development'].index ENV.fetch('RACK_ENV')
 
 class Object
   def r what=nil

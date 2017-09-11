@@ -15,11 +15,6 @@ if ENV['RACK_ENV'] == 'production'
   stdout_redirect './tmp/puma_stdout', './tmp/puma_stderr'
 end
 
-Thread.new do
-  while true
-    # delete all cache files which where not accessd in 2 days
-    `find ./cache -depth -type f -atime +2 -delete`
-    sleep 3600
-  end
-end
+in_process_file = './config/puma_in_process.rb'
 
+eval File.read in_process_file if File.exists?(in_process_file)

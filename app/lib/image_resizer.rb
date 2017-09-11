@@ -1,5 +1,3 @@
-ENV['RACK_ENV'] ||= 'developmnet'
-
 require 'logger'
 
 class ImageResizer
@@ -74,7 +72,7 @@ class ImageResizer
       when 'log'
         File.read LOG_FILE
       else
-        File.read('./public/index.html')
+        File.read('./public/%s.html' % ENV.fetch('RACK_ENV'))
     end
 
     @response.write data
@@ -95,7 +93,8 @@ class ImageResizer
   end
 
   def is_local
-    ['127.0.0.1','0.0.0.0'].index(@request.ip)
+    # ['127.0.0.1','0.0.0.0'].index(@request.ip)
+    ENV.fetch('RACK_ENV') == 'development'
   end
 
   ### ROTUES
