@@ -14,7 +14,3 @@ if ENV['RACK_ENV'] == 'production'
   state_path      './tmp/puma.state'
   stdout_redirect './tmp/puma_stdout', './tmp/puma_stderr'
 end
-
-in_process_file = './config/puma_in_process.rb'
-
-eval File.read in_process_file if File.exists?(in_process_file)

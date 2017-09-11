@@ -1,6 +1,5 @@
 cache/
 tmp/
 log/
-config/puma_in_process.rb
 .env
 
