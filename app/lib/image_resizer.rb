@@ -57,6 +57,8 @@ class ImageResizer
       unpack_path
     elsif is_local
       @request.params.inject({}) { |h,(k,v)| h[k.to_sym] = v; h }
+    else
+      {}
     end
 
     # routing
@@ -64,7 +66,11 @@ class ImageResizer
       when 'r'
         get_resize
       when 'pack'
-        get_pack if is_local
+        if is_local
+          get_pack
+        else
+          'Only in development'
+        end
       when 'log'
         File.read LOG_FILE
       when ''
@@ -74,14 +80,7 @@ class ImageResizer
         @response.headers["Content-Type"]   = "image/vnd.microsoft.icon"
         ICON
       else
-        file = './public%s' % @request.path
-        if File.exists?(file)
-          @response.headers["Content-Type"] = 'text/%s' % file.index('.html') ? 'html' : 'plain'
-          File.read(file)
-        else
-          'HTTP 404 - not found'
-          @response.status = 404
-        end
+        deliver_local
     end
 
     @response.write data
@@ -99,6 +98,28 @@ class ImageResizer
     return [400, {}, ['Error: No response body']] unless @response.body[0]
     @response.status ||= 200
     @response.finish
+  end
+
+  def deliver_local
+    file = './public%s' % @request.path
+
+    if File.exists?(file)
+      ext = file.split('.').last.downcase
+      @response.headers["Content-Type"] = case
+        when ext == 'html'
+          'text/html'
+        when ['gif', 'jpg', 'jpeg', 'png'].index(ext)
+          'image/%s' % ext
+        else
+          'text/plain'
+      end
+
+      File.read(file)
+    else
+      @response.headers["Content-Type"] = 'text/plain'
+      @response.status = 404
+      'HTTP 404 - not found'
+    end
   end
 
   def is_local
@@ -125,7 +146,7 @@ class ImageResizer
     # we need to have at least one sizeing attribute
 
     image = @params[:image]
-    return '[image] not defined' unless image.to_s.length > 1
+    return "[image] not defined (can't read query string in production)" unless image.to_s.length > 1
 
     resize_width, resize_height = @params[:size].to_s.split('x').map(&:to_i)
     resize_width  ||= 0
