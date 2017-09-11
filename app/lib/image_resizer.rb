@@ -49,7 +49,7 @@ class ImageResizer
   def router
     @path = @request.path.split('/').drop(1)
 
-    @params = if @path[1]
+    @params = if @path[0] == 'r' && @path[1]
       # if we have hashed paramteres
       return if from_http_cache
 
@@ -71,6 +71,8 @@ class ImageResizer
         get_pack if is_local
       when 'log'
         File.read LOG_FILE
+      when '.well-known'
+        'ok'
       else
         File.read('./public/%s.html' % ENV.fetch('RACK_ENV'))
     end
