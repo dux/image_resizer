@@ -60,21 +60,28 @@ class ImageResizer
     end
 
     # routing
-    data = case @path[0]
-      when 'favicon.ico'
-        @response.headers["Content-Length"] = ICON.length
-        @response.headers["Content-Type"]   = "image/vnd.microsoft.icon"
-        ICON
+    data = case @path[0].to_s
       when 'r'
         get_resize
       when 'pack'
         get_pack if is_local
       when 'log'
         File.read LOG_FILE
-      when '.well-known'
-        File.read './public/.well-known'
-      else
+      when ''
         File.read('./public/%s.html' % ENV.fetch('RACK_ENV'))
+      when 'favicon.ico'
+        @response.headers["Content-Length"] = ICON.length
+        @response.headers["Content-Type"]   = "image/vnd.microsoft.icon"
+        ICON
+      else
+        file = './public%s' % @request.path
+        if File.exists?(file)
+          @response.headers["Content-Type"] = 'text/%s' % file.index('.html') ? 'html' : 'plain'
+          File.read(file)
+        else
+          'HTTP 404 - not found'
+          @response.status = 404
+        end
     end
 
     @response.write data
