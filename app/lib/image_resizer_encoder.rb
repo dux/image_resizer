@@ -6,7 +6,7 @@ module ImageResizerEncoder
   extend self
 
   JWT_ALGORITHM  = 'HS256'
-  RESIZER_SECRET = ENV['RESIZER_SECRET']
+  RESIZER_SECRET = ENV.fetch('RESIZER_SECRET')
   RESIZER_URL    = ENV['RESIZER_URL']    || 'http://localhost:4000'
 
   def pack data
