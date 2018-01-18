@@ -1,3 +1,5 @@
+# main class that handles image resizing
+
 class ImageResizer
   attr_reader :ext, :image, :original, :resized
 

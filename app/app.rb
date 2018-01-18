@@ -1,3 +1,5 @@
+# base app class
+
 module App
   extend self
 

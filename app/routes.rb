@@ -1,3 +1,5 @@
+# main app routes
+
 def render_image
   image = @params[:image]
   return "[image] not defined (can't read query string in production)" unless image.to_s.length > 1
@@ -70,6 +72,7 @@ get '/r/*' do
   render_image
 end
 
+# only in development
 if App.is_local?
   get '/r' do
     @params = params
