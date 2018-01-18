@@ -7,9 +7,11 @@ Used JSON Web Tokens for URL encoding. https://jwt.io
 
 /r
 
-* image = source image
-* size  = width x height
-* q     = quality (10 - 100)
+* image  = source image
+* size   = width x height
+* width  = width
+* height = height
+* q      = quality (10 - 100)
 
 /pack?image=foo&size=bar
 
@@ -22,6 +24,7 @@ use ResizePacker class for resizeing on server
 
 * ResizePacker.pack({ image:'http://some-destinat.io/n.jpg', width:100 })
 * ResizePacker.url({ image:'http://some-destinat.io/n.jpg', width:100 })
+
 
 ## Final form is
 
@@ -36,11 +39,16 @@ http://localhost:4000/r/5x5g4maheKCb0_fqBmwLiihTgc8iduV4gCQSyU3gF9i7H6gPjDdrDjlN
 
 ### localhost examples
 
-http://0.0.0.0:4000/r?size=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
+http://0.0.0.0:4000/r?size=200&image=https://i.imgur.com/jQ55JGT.jpg
 
-http://0.0.0.0:4000/r?size=200x300&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
+http://0.0.0.0:4000/r?size=200x300&image=https://i.imgur.com/jQ55JGT.jpg
 
-http://0.0.0.0:4000/r?width=200&image=http://www.funchap.com/wp-content/uploads/2014/01/pictures-of-flowers.jpg
+http://0.0.0.0:4000/r?width=200&image=https://i.imgur.com/jQ55JGT.jpg
+
+
+### crontab clear cache
+
+1 * * * * /home/user/apps/rack_image_resizer/bin/clear_cache && curl -fsS --retry 3 https://hchk.io/sid > /dev/null
 
 
 ### how to run?
@@ -48,6 +56,7 @@ http://0.0.0.0:4000/r?width=200&image=http://www.funchap.com/wp-content/uploads/
 puma or ./run_development.bash
 
 ./run_production.bash
+
 
 ### why?
 

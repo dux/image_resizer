@@ -149,8 +149,8 @@ class ImageResizer
     return "[image] not defined (can't read query string in production)" unless image.to_s.length > 1
 
     resize_width, resize_height = @params[:size].to_s.split('x').map(&:to_i)
-    resize_width  ||= 0
-    resize_height ||= 0
+    resize_width  ||= @params[:width].to_i
+    resize_height ||= @params[:height].to_i
 
     return "Width and height from :size are 0" unless resize_width > 10 || resize_height > 10
     return 'Image to large' if resize_width > 1500 || resize_height > 1500

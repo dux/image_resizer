@@ -4,7 +4,6 @@ gem 'rack'
 gem 'json'
 gem 'jwt', '1.5.6'
 gem 'dotenv'
-gem 'puma_worker_killer', require: false
 
 group :development do
   gem 'awesome_print'
