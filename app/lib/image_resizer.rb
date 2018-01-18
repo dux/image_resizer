@@ -1,194 +1,99 @@
-require 'logger'
+class ImageResizerImage
+  attr_reader :ext, :image, :original, :resized
 
-class ImageResizer
+  def initialize(image:, quality:80, reload:nil, is_local: false)
+    ext = image.split('.').reverse[0].to_s
+    ext = 'jpg' unless ext.length > 2 && ext.length < 5
+    ext = 'jpg' if ext == 'jpeg'
 
-  ICON     = File.read('./public/favicon.ico')
-  LOG_FILE = './log/%s.log' % ENV['RACK_ENV']
-  LOGGER   = Logger.new(LOG_FILE, 'weekly')
-  LOGGER.datetime_format = '%F %R'
+    @image        = image
+    @ext          = ext.downcase
+    @quality      = quality < 10 || quality > 100 ? 80 : quality
+    @src_in_cache = "#{App.root}/cache/originals/#{md5(@image)}.#{@ext}"
+    @reload       = reload
 
-  class << self
-    def call env
-      app = new env
-      app.router
-      app.deliver
+    File.unlink(@src_in_cache) if @reload && File.exist?(@src_in_cache)
+  end
+
+  def md5(data)
+    ret = Digest::MD5.hexdigest data
+    ret[2,0] = ''
+    ret
+  end
+
+  def run(what)
+    # puts what
+    system "#{what} 2>&1"
+  end
+
+  def log text
+    App.log text
+  end
+
+  def download(target=nil)
+    unless File.exists?(@src_in_cache)
+      run "curl '#{@image}' --create-dirs -s -o '#{@src_in_cache}'"
+      log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@src_in_cache).size/1024]
     end
 
-    def log text
-      LOGGER.info text
+    if dir = target.dup
+      dir.gsub!(/\/[^\/]+$/,'')
+      Dir.mkdir dir unless Dir.exists?(dir)
+    end
+
+    @src_in_cache
+  end
+
+  def convert_base
+    # remove alpha for jpegs and keep for png-s
+    "convert '#{@src_in_cache}' -alpha #{@ext == 'jpg' ? 'remove -background white' : 'on'} -strip -quality #{@quality}"
+  end
+
+  def resize_do img_path
+    resized = '%s/cache/%s' % [App.root, img_path]
+    File.unlink(resized) if @reload && File.exist?(resized)
+
+    unless File.exists?(resized)
+      download resized
+      yield resized
+    end
+
+    resized
+  end
+
+  def resize_width size
+    resize_do "resized/w_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}" do |resized|
+      log 'WIDTH of %s to %d' % [@image, size]
+      run "#{convert_base} -resize #{size}x '#{resized}'"
     end
   end
 
-  ###
-
-  def initialize env
-    @request  = Rack::Request.new env
-    @response = Rack::Response.new
-  end
-
-  def from_http_cache
-    @md5 = Digest::MD5.hexdigest @path[1]
-
-    if @request.env['HTTP_IF_NONE_MATCH'] == @md5 && !@request.params[:reload]
-      @response.status = 304
-      @response.write 'not-modified'
-      return true
-    else
-      false
+  def resize_height size
+    resize_do "resized/h_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}" do |resized|
+      log 'HEIGHT of %s to %d' % [@image, size]
+      run "#{convert_base} -resize x#{size} '#{resized}'"
     end
   end
 
-  def unpack_path
-    # /r/{some-name}/hash.jpg
-    # /r/hash~{some-name}.jpg # tilde
-    data = @path[1].split('/').last.split('~').first
-    data = data.sub(/\.\w{3,4}$/,'')
-    ImageResizerEncoder.unpack(data)
-  end
+  def crop size, gravity
+    size.gsub!(' ','+')
+    width, height, x_offset, y_offset = size.to_s.downcase.split(/[x\+]/)
+    height ||= width
+    raise 'Image to large' if width.to_i > 1500 || height.to_i > 1500
 
-  def router
-    @path = @request.path.split('/').drop(1)
-
-    @params = if @path[0] == 'r' && @path[1]
-      # if we have hashed paramteres
-      return if from_http_cache
-
-      # recieved packed string
-      unpack_path
-    elsif is_local
-      @request.params.inject({}) { |h,(k,v)| h[k.to_sym] = v; h }
-    else
-      {}
-    end
-
-    # routing
-    data = case @path[0].to_s
-      when 'r'
-        get_resize
-      when 'pack'
-        if is_local
-          get_pack
-        else
-          'Only in development'
-        end
-      when 'log'
-        File.read LOG_FILE
-      when ''
-        File.read('./public/%s.html' % ENV.fetch('RACK_ENV'))
-      when 'favicon.ico'
-        @response.headers["Content-Length"] = ICON.length
-        @response.headers["Content-Type"]   = "image/vnd.microsoft.icon"
-        ICON
+    resize_do "croped/#{size}-q#{@quality}-#{md5(@image)}.#{@ext}" do |cropped|
+      if y_offset
+        # crop with offset, without resize
+        dimension = "#{width}x#{height}+#{x_offset}+#{y_offset}"
+        log 'CROP %s to %s' % [@image, dimension]
+        run "#{convert_base} -crop #{dimension} -gravity #{gravity} -extent #{width}x#{height} #{cropped}"
       else
-        deliver_local
-    end
-
-    @response.write data
-  rescue
-    # raise $! if is_local
-
-    msg = '%s (%s)' % [$!.message, $!.class]
-    self.class.log 'ERROR: %s - %s' % [msg, @request.url]
-
-    @response.write msg
-    @response.status = 500
-  end
-
-  def deliver
-    return [400, {}, ['Error: No response body']] unless @response.body[0]
-    @response.status ||= 200
-    @response.finish
-  end
-
-  def deliver_local
-    file = './public%s' % @request.path
-
-    if File.exists?(file)
-      ext = file.split('.').last.downcase
-      @response.headers["Content-Type"] = case
-        when ext == 'html'
-          'text/html'
-        when ['gif', 'jpg', 'jpeg', 'png'].index(ext)
-          'image/%s' % ext
-        else
-          'text/plain'
+        # regular resize crop
+        dimension = "#{width}x#{height}^"
+        log 'CROP %s to %s' % [@image, dimension]
+        run "#{convert_base} -resize #{dimension} -gravity #{gravity} -extent #{width}x#{height} #{cropped}"
       end
-
-      File.read(file)
-    else
-      @response.headers["Content-Type"] = 'text/plain'
-      @response.status = 404
-      'HTTP 404 - not found'
     end
-  end
-
-  def is_local
-    # ['127.0.0.1','0.0.0.0'].index(@request.ip)
-    ENV.fetch('RACK_ENV') == 'development'
-  end
-
-  ### ROTUES
-
-  def get_pack
-    url = "#{@request.env['rack.url_scheme']}://#{@request.env['HTTP_HOST']}/r/#{ImageResizerEncoder.pack(@params)}.jpg"
-
-    return %[<html><head></head><body><h3>On server</h3><pre>ImageResizerEncoder.url(#{JSON.pretty_generate(@params)})</pre>
-      <hr />
-      <h3>Will output</h3>
-      <a href="#{url}">#{url}</a></body></html>]
-  end
-
-  # image: URL to image
-  # width: width of image
-  # height: height of image
-  # crop: crop area of image
-  def get_resize
-    # we need to have at least one sizeing attribute
-
-    image = @params[:image]
-    return "[image] not defined (can't read query string in production)" unless image.to_s.length > 1
-
-    resize_width, resize_height = @params[:size].to_s.split('x').map(&:to_i)
-    resize_width  ||= @params[:width].to_i
-    resize_height ||= @params[:height].to_i
-
-    return "Width and height from :size are 0" unless resize_width > 10 || resize_height > 10
-    return 'Image to large' if resize_width > 1500 || resize_height > 1500
-
-    @params[:q] = @params[:q].to_i
-    @params[:q] = 85 if @params[:q] < 10
-
-    reload = false
-    reload = true if @params[:reload]
-    # reload = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
-
-    img = ImageResizerImage.new image: image, quality: @params[:q], reload: reload, is_local: is_local
-    ext = img.ext
-
-    file = if resize_width > 0 && resize_height > 0
-      gravity = @params[:gravity].to_s.downcase
-      gravity = 'North' if gravity.length == 0
-      img.crop(@params[:size], gravity)
-    elsif resize_width > 0
-      img.resize_width(resize_width)
-    elsif resize_height > 0
-      img.resize_height(resize_height)
-    else
-      raise '?'
-    end
-
-    data = File.read file
-
-    @md5 ||= Digest::MD5.hexdigest data
-
-    @response.headers['ETag']                = @md5
-    @response.headers['Content-Type']        = "image/#{ext}"
-    @response.headers['Cache-Control']       = 'public, max-age=10000000, no-transform'
-    @response.headers['Connection']          = 'keep-alive'
-    @response.headers['Content-Disposition'] = %[inline; filename="#{@md5}.#{ext}"]
-    @response.headers['Connection']          = 'keep-alive'
-
-    data
   end
 
 end

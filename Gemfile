@@ -4,6 +4,7 @@ gem 'rack'
 gem 'json'
 gem 'jwt', '1.5.6'
 gem 'dotenv'
+gem 'sinatra'
 
 group :development do
   gem 'awesome_print'

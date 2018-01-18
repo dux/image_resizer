@@ -25,7 +25,7 @@ for dir in ['cache','cache/originals', 'cache/resized', 'cache/pages', 'cache/cr
   Dir.mkdir(dir) unless Dir.exists?(dir)
 end
 
-[:resizer, :resizer_encoder, :resizer_image].each { |lib| require_relative "./lib/image_#{lib}" }
+[:routes, :url, :resizer].each { |lib| require_relative "./lib/image_#{lib}" }
 
 `find ./cache -depth -type f -atime +2 -delete`
 
