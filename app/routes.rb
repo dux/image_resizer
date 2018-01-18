@@ -55,7 +55,7 @@ get '/' do
 end
 
 get '/pack' do
-  url = ImageResizerUrl.url(@params)
+  url = ImageResizerUrl.get(@params)
 
   return %[<html><head></head><body><h3>On server</h3><pre>ImageResizerEncoder.url(#{JSON.pretty_generate(@params)})</pre>
     <hr />

@@ -5,18 +5,28 @@ describe 'image resizer' do
   let(:params) {
     {
       image: 'http://i.imgur.com/krurDGE.jpg',
-      crop: 200,
-      secret: ENV.fetch('RESIZER_SECRET')
+      size: '200x200'
     }
   }
 
+  let(:url) { ImageResizerUrl.get(params) }
+
+  it 'shoud find imagemagic convert' do
+    expect(`which convert`.length > 1).to eq(true)
+  end
+
   it 'shoud generate pack url' do
-    url = ImageResizerEncoder.pack(params)
-    expect(url.length > 50).to eq(true)
+    expect(url.length).to eq(111)
+  end
+
+  it 'shoud unpack url' do
+    base = url.split('/r/').last
+    opts = ImageResizerUrl.unpack(base)
+    expect(opts[:size]).to eq(params[:size])
   end
 
   it 'shoud resize image' do
-    img     = ImageResizerImage.new image: params[:image], quality: 80, reload: true
+    img     = ImageResizer.new image: params[:image], quality: 80, reload: true
     resized = img.resize_width(100)
 
     expect(File.exists?(resized)).to eq(true)

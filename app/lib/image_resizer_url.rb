@@ -26,8 +26,7 @@ module ImageResizerUrl
   #   image: "http://i.imgur.com/krurDGE.jpg",
   #   size:  "222x222"
   # }
-  def url opts
-    ap opts
+  def get opts
     name = opts.delete(:name)
 
     data = []
