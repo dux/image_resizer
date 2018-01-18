@@ -1,17 +1,10 @@
 require 'dotenv'
 Dotenv.load
 
-for dir in ['tmp', 'log']
-  Dir.mkdir dir unless Dir.exists?(dir)
-end
-
-@port = 4000
-
-port @port
+port 4000
 
 if ENV['RACK_ENV'] == 'production'
   # daemonize true
-  port 4000
   workers 2
   threads 1, 32
   pidfile         './tmp/puma.pid'

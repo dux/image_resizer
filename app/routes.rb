@@ -1,20 +1,4 @@
-get '/' do
-  erb ENV['RACK_ENV'].downcase.to_sym
-end
-
-get '/pack' do
-  url = "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}/r/#{ImageResizerEncoder.pack(@params)}.jpg"
-
-  return %[<html><head></head><body><h3>On server</h3><pre>ImageResizerEncoder.url(#{JSON.pretty_generate(@params)})</pre>
-    <hr />
-    <h3>Will output</h3>
-    <a href="#{url}">#{url}</a></body></html>]
-end
-
-get '/r/*' do
-  data    = params[:splat].first.sub(/\.\w{3,4}$/,'')
-  @params = ImageResizerEncoder.unpack(data)
-
+def render_image
   image = @params[:image]
   return "[image] not defined (can't read query string in production)" unless image.to_s.length > 1
 
@@ -32,7 +16,7 @@ get '/r/*' do
   reload = true if @params[:reload]
   # reload = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
 
-  img = ImageResizerImage.new image: image, quality: @params[:q], reload: reload, is_local: App.is_local?
+  img = ImageResizer.new image: image, quality: @params[:q], reload: reload, is_local: App.is_local?
   ext = img.ext
 
   file = if resize_width > 0 && resize_height > 0
@@ -64,4 +48,32 @@ get '/r/*' do
   response.headers['Connection']          = 'keep-alive'
 
   data
+end
+
+get '/' do
+  erb ENV['RACK_ENV'].downcase.to_sym
+end
+
+get '/pack' do
+  url = ImageResizerUrl.url(@params)
+
+  return %[<html><head></head><body><h3>On server</h3><pre>ImageResizerEncoder.url(#{JSON.pretty_generate(@params)})</pre>
+    <hr />
+    <h3>Will output</h3>
+    <a href="#{url}">#{url}</a></body></html>]
+end
+
+get '/r/*' do
+  data    = params[:splat].first.sub(/\.\w{3,4}$/,'')
+  @params = ImageResizerUrl.unpack data
+
+  render_image
+end
+
+if App.is_local?
+  get '/r' do
+    @params = params
+
+    render_image
+  end
 end

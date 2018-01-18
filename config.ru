@@ -1,12 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'bundler/setup'
+require './app/main'
 
-Bundler.require(:default)
-
-Dotenv.load('.env')
-
-require "./app/app"
-
-run ImageResizer
+run Sinatra::Application

@@ -1,7 +1,7 @@
-class ImageResizerImage
+class ImageResizer
   attr_reader :ext, :image, :original, :resized
 
-  def initialize(image:, quality:80, reload:nil, is_local: false)
+  def initialize image:, quality:80, reload:nil, is_local: false
     ext = image.split('.').reverse[0].to_s
     ext = 'jpg' unless ext.length > 2 && ext.length < 5
     ext = 'jpg' if ext == 'jpeg'
@@ -15,13 +15,13 @@ class ImageResizerImage
     File.unlink(@src_in_cache) if @reload && File.exist?(@src_in_cache)
   end
 
-  def md5(data)
+  def md5 data
     ret = Digest::MD5.hexdigest data
     ret[2,0] = ''
     ret
   end
 
-  def run(what)
+  def run what
     # puts what
     system "#{what} 2>&1"
   end
@@ -30,7 +30,7 @@ class ImageResizerImage
     App.log text
   end
 
-  def download(target=nil)
+  def download target=nil
     unless File.exists?(@src_in_cache)
       run "curl '#{@image}' --create-dirs -s -o '#{@src_in_cache}'"
       log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@src_in_cache).size/1024]
@@ -53,7 +53,7 @@ class ImageResizerImage
     resized = '%s/cache/%s' % [App.root, img_path]
     File.unlink(resized) if @reload && File.exist?(resized)
 
-    unless File.exists?(resized)
+    unless File.exists? resized
       download resized
       yield resized
     end

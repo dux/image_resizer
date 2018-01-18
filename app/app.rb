@@ -1,31 +1,33 @@
-#!/usr/bin/ruby
+module App
+  extend self
 
-require 'digest'
-require 'json'
-require 'base64'
-require 'openssl'
-require 'dotenv'
-require 'bundler/setup'
+  ICON     = File.read('./public/favicon.ico')
+  LOG_FILE = './log/%s.log' % ENV['RACK_ENV']
+  LOGGER   = Logger.new(LOG_FILE, 'weekly')
+  ROOT     = File.expand_path('..', File.dirname(__FILE__))
 
-Dotenv.load
-Bundler.require
+  LOGGER.datetime_format = '%F %R'
 
-raise 'RACK_ENV not suported' unless ['production', 'development'].index ENV.fetch('RACK_ENV')
+  def call env
+    app = new env
+    app.router
+    app.deliver
+  end
 
-class Object
-  def r what=nil
-    raise StandardError, what
+  def log text
+    LOGGER.info text
+  end
+
+  def is_local?
+    ENV.fetch('RACK_ENV') == 'development'
+  end
+
+  def root
+    ROOT
+  end
+
+  def die text
+    puts text.red
+    exit
   end
 end
-
-ROOT = Dir.getwd
-
-for dir in ['cache','cache/originals', 'cache/resized', 'cache/pages', 'cache/croped']
-  dir = "#{ROOT}/#{dir}"
-  Dir.mkdir(dir) unless Dir.exists?(dir)
-end
-
-[:routes, :url, :resizer].each { |lib| require_relative "./lib/image_#{lib}" }
-
-`find ./cache -depth -type f -atime +2 -delete`
-
