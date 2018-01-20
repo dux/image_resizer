@@ -57,12 +57,9 @@ get '/' do
 end
 
 get '/pack' do
-  url = ImageResizerUrl.get(@params)
+  @url = ImageResizerUrl.get(@params)
 
-  return %[<html><head></head><body><h3>On server</h3><pre>ImageResizerEncoder.url(#{JSON.pretty_generate(@params)})</pre>
-    <hr />
-    <h3>Will output</h3>
-    <a href="#{url}">#{url}</a></body></html>]
+  erb :pack
 end
 
 get '/r/*' do
