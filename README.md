@@ -37,12 +37,41 @@ http://0.0.0.0:4000/r?width=200&image=https://i.imgur.com/jQ55JGT.jpg
 1 * * * * /home/user/apps/rack_image_resizer/bin/clear_cache && curl -fsS --retry 3 https://hchk.io/sid > /dev/null
 
 
-### how to run?
+### Production installation
 
-puma or ./run_development.bash
+Clone the app
 
-./run_production.bash
+`git clone https://github.com/dux/rack_image_resizer.git image_resizer`
 
+chdir an bundle
+
+`cd image_resizer`
+
+`bundle`
+
+add to `.env`
+
+```
+RESIZER_SECRET=...
+RACK_ENV=production
+```
+
+Install image magic
+
+Check installation with `rspec`
+
+### In your ruby app
+
+Copy `./lib/image_resizer_url.rb` to `..app/lib`
+
+Add the same secret to ENV and add RESIZER_URL ENV var
+
+```
+RESIZER_SECRET=...
+RESIZER_URL=https://resizer.ypurapp.com
+```
+
+Resize images with `ImageResizerUrl.get({image: "http://...", size:  "200x200"})`
 
 ### why?
 
