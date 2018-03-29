@@ -53,6 +53,8 @@ def render_image
 end
 
 get '/' do
+  @version = File.read('.version')
+
   erb ENV['RACK_ENV'].downcase.to_sym
 end
 
