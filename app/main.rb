@@ -22,7 +22,7 @@ require_relative 'lib/image_resizer'
 App.die('ImageMagic convert not found in path') if `which convert` == ''
 
 # exit uneless unsuported env
-App.die('Unsupported RACK_ENV') unless ['production', 'development'].include?(ENV['RACK_ENV'])
+App.die('Unsupported RACK_ENV') unless ['production', 'development'].include?(ENV.fetch('RACK_ENV'))
 
 # create needed folers
 for dir in ['cache','cache/originals', 'cache/resized', 'cache/pages', 'cache/croped']

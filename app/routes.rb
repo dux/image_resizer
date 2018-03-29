@@ -63,8 +63,6 @@ get '/pack' do
 end
 
 get '/r/*' do
-  ap request.env
-
   data    = params[:splat].first.sub(/\.\w{3,4}$/,'')
   @params = ImageResizerUrl.unpack data
 

@@ -6,7 +6,7 @@ module ImageResizerUrl
   extend self
 
   RESIZER_SECRET = ENV.fetch('RESIZER_SECRET')
-  RESIZER_URL    = ENV['RESIZER_URL']    || 'http://localhost:4000'
+  RESIZER_URL    = ENV['RESIZER_URL'] || 'http://localhost:4000'
 
   # eyJpbWFnZSI6Imh0dHA6Ly9pLmltZ3VyLmNvbS9rcnVyREdFLmpwZyIsInNpemUiOiIyMjJ4MjIyIn07c62.jpg
   def unpack url_part
@@ -43,7 +43,7 @@ module ImageResizerUrl
     # add check
     data.push Digest::SHA1.hexdigest(RESIZER_SECRET+data.first)[0,4]
 
-    # add name is defined
+    # add name if it is defined
     if name
       name = '~%s' % name.to_s.gsub(/[^\w\-\.]+/,'_')[0,30]
       name = name.sub(/\.\w{3,4}$/,'')
