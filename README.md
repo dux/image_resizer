@@ -1,9 +1,7 @@
-Ruby Rack image resizer
+Sinatra/ImageMagic image resizer
 =====================
 
 Fast and stable image resizer, written in Ruby
-
-Used JSON Web Tokens for URL encoding. https://jwt.io
 
 /r
 
@@ -18,23 +16,11 @@ Used JSON Web Tokens for URL encoding. https://jwt.io
 * just use pack insted of resize
 * render URL PACKED FOR PRODUCTION
 
-/r/JWT_ENCODED_HASH.jpg => production
+/r/HASH.jpg => production
 
-use ResizePacker class for resizeing on server
+Copy ImageResizer class for resizeing on production server.
 
-* ResizePacker.pack({ image:'http://some-destinat.io/n.jpg', width:100 })
-* ResizePacker.url({ image:'http://some-destinat.io/n.jpg', width:100 })
-
-
-## Final form is
-
-```
-http://host/r/#{JWT.encode(hash)}
-```
-
-```
-http://localhost:4000/r/5x5g4maheKCb0_fqBmwLiihTgc8iduV4gCQSyU3gF9i7H6gPjDdrDjlNjUb9ybJRSwHNo2jQ9Z0aOrSn-KoRvFk5cS9Pp_MlOiqyXQJ_auS0hQS_22jO2af09xueWdDOIXnukBvZcvx322E52wUDbL9cwxAHiRzrpaTgG7EJ8iqI9zALF7_M0UfLDCFrtsKVRHLymPEQlQhqEzOnxQ-G4w==.jpg
-```
+* ImageResizerUrl.get({ image:'http://some-destinat.io/n.jpg', width:100 })
 
 
 ### localhost examples
@@ -62,7 +48,3 @@ puma or ./run_development.bash
 
 Small, fast & has everything I need
 
-
-### about
-
-@dux in 2014 - 2016
