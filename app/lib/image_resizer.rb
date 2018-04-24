@@ -6,7 +6,7 @@ class ImageResizer
   def initialize image:, quality:80, reload:nil, is_local: false
     ext = image.split('.').reverse[0].to_s
     ext = 'jpg' unless ext.length > 2 && ext.length < 5
-    ext = 'jpg' if ext == 'jpeg'
+    ext = 'jpeg' if ext == 'jpg'
 
     @image        = image
     @ext          = ext.downcase

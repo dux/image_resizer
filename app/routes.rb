@@ -35,17 +35,18 @@ def render_image
 
   data = File.read file
 
-  @md5 ||= Digest::MD5.hexdigest data
+  @etag = '"%s"' % Digest::MD5.hexdigest(data)
 
-  if request.env['HTTP_IF_NONE_MATCH'] == @md5
+  if request.env['HTTP_IF_NONE_MATCH'] == @etag
     response.status = 304
     return
   end
 
-  response.headers['ETag']                = @md5
-  response.headers['Content-Type']        = "image/#{ext}"
-  response.headers['Cache-Control']       = 'public, max-age=10000000, no-transform'
-  response.headers['Connection']          = 'keep-alive'
+  response.headers['accept-ranges']  = 'bytes'
+  response.headers['etag']           = @etag
+  response.headers['content-type']   = "image/#{ext}"
+  response.headers['cache-control']  = 'public, max-age=10000000, no-transform'
+  response.headers['content-length'] = data.bytesize
 
   data
 end
