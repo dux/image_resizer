@@ -46,8 +46,6 @@ def render_image
   response.headers['Content-Type']        = "image/#{ext}"
   response.headers['Cache-Control']       = 'public, max-age=10000000, no-transform'
   response.headers['Connection']          = 'keep-alive'
-  response.headers['Content-Disposition'] = %[inline; filename="#{@md5}.#{ext}"]
-  response.headers['Connection']          = 'keep-alive'
 
   data
 end
