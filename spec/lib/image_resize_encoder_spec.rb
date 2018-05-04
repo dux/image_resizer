@@ -11,8 +11,10 @@ describe 'image resizer' do
 
   let(:url) { ImageResizerUrl.get(params) }
 
-  it 'shoud find imagemagic convert' do
-    expect(`which convert`.length > 1).to eq(true)
+  [:jpegoptim, :curl, :convert, :pngquant].each do |app|
+    it 'shoud find %s' % app do
+      expect(`which #{app}`.length > 1).to eq(true)
+    end
   end
 
   it 'shoud generate pack url' do
