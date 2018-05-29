@@ -32,6 +32,15 @@ class ImageResizer
     App.log text
   end
 
+  def content_type
+    case @ext
+      when 'svg'
+        'svg+xml'
+      else
+        @ext
+    end
+  end
+
   def download
     unless File.exists?(@src_in_cache)
       run "curl -L '#{@image}' --create-dirs -s -o '#{@src_in_cache}'"

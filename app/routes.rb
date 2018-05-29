@@ -19,8 +19,6 @@ def render_image
   # reload = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
 
   img = ImageResizer.new image: image, quality: @params[:q], reload: reload, is_local: App.is_local?
-  ext = img.ext
-  ext = 'svg+xml' if ext == 'svg'
 
   file = if resize_width > 0 && resize_height > 0
     gravity = @params[:gravity].to_s.downcase
@@ -45,7 +43,7 @@ def render_image
 
   response.headers['accept-ranges']  = 'bytes'
   response.headers['etag']           = @etag
-  response.headers['content-type']   = "image/#{ext}"
+  response.headers['content-type']   = "image/#{img.content_type}"
   response.headers['cache-control']  = 'public, max-age=10000000, no-transform'
   response.headers['content-length'] = data.bytesize
 
