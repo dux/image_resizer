@@ -70,6 +70,16 @@ get '/r/*' do
   render_image
 end
 
+get '/log' do
+  return 'secret not defined' unless params[:secret] == ENV.fetch('RESIZER_SECRET')
+
+  lines = `tail -n 500 #{App::LOG_FILE}`.split($/).reverse.join($/)
+
+  content_type :text
+
+  lines
+end
+
 # only in development
 if App.is_local?
   get '/r' do

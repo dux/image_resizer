@@ -73,6 +73,12 @@ RESIZER_URL=https://resizer.ypurapp.com
 
 Resize images with `ImageResizerUrl.get({image: "http://...", size:  "200x200"})`
 
+### View log
+
+View last 500 log entries
+
+`/log?secret=ENV[RESIZER_SECRET]`
+
 ### why?
 
 Small, fast & has everything I need
