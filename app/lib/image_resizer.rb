@@ -3,7 +3,7 @@
 class ImageResizer
   attr_reader :ext, :image, :original, :resized
 
-  def initialize image:, quality:80, reload:nil, is_local: false
+  def initialize image:, quality:80, reload:nil, is_local:false
     ext = image.split('.').reverse[0].to_s
     ext = 'jpeg' unless ext.length > 2 && ext.length < 5
     ext = 'jpeg' if ext == 'jpg'
@@ -34,7 +34,7 @@ class ImageResizer
 
   def download
     unless File.exists?(@src_in_cache)
-      run "curl '#{@image}' --create-dirs -s -o '#{@src_in_cache}'"
+      run "curl -L '#{@image}' --create-dirs -s -o '#{@src_in_cache}'"
 
       if File.exists?(@src_in_cache)
         log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@src_in_cache).size/1024]
@@ -70,6 +70,11 @@ class ImageResizer
       download
       yield
       optimize
+    end
+
+    unless File.exists? @target
+      File.unlink(@src_in_cache)
+      return './public/error.png'
     end
 
     @target
