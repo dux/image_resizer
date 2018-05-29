@@ -35,7 +35,13 @@ class ImageResizer
   def download
     unless File.exists?(@src_in_cache)
       run "curl '#{@image}' --create-dirs -s -o '#{@src_in_cache}'"
-      log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@src_in_cache).size/1024]
+
+      if File.exists?(@src_in_cache)
+        log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@src_in_cache).size/1024]
+      else
+        log 'ERROR %s cant download' % @image
+        return @src_in_cache = './public/error.png'
+      end
     end
 
     @src_in_cache
