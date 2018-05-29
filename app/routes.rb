@@ -20,6 +20,7 @@ def render_image
 
   img = ImageResizer.new image: image, quality: @params[:q], reload: reload, is_local: App.is_local?
   ext = img.ext
+  ext = 'svg+xml' if ext = 'svg'
 
   file = if resize_width > 0 && resize_height > 0
     gravity = @params[:gravity].to_s.downcase

@@ -66,6 +66,8 @@ class ImageResizer
     @target = '%s/cache/%s' % [App.root, img_path]
     File.unlink(@target) if @reload && File.exist?(@target)
 
+    return @src_in_cache if @ext == 'svg'
+
     unless File.exists? @target
       download
       yield
