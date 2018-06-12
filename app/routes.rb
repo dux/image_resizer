@@ -1,6 +1,12 @@
 # main app routes
 
 def render_image
+  @params[:q]       = (@params[:quality] || @params[:q]).to_i
+  @params[:width]   = (@params[:width]   || @params[:h]).to_i
+  @params[:height]  = (@params[:height]  || @params[:h]).to_i
+  @params[:size]  ||=  @params[:s]
+  @params[:image] ||=  @params[:i]
+
   image = @params[:image]
   return "[image] not defined (can't read query string in production)" unless image.to_s.length > 1
 
@@ -11,7 +17,6 @@ def render_image
   return "Width and height from :size are 0" unless resize_width > 10 || resize_height > 10
   return 'Image to large' if resize_width > 1500 || resize_height > 1500
 
-  @params[:q] = @params[:q].to_i
   @params[:q] = 85 if @params[:q] < 10
 
   reload = false
