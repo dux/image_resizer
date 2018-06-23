@@ -56,9 +56,10 @@ class ImageResizer
     @src_in_cache
   end
 
-  def convert_base
-    # remove alpha for jpegs and keep for png-s
-    "convert '#{@src_in_cache}' -alpha #{@ext == 'jpg' ? 'remove -background white' : 'on'} -strip -quality #{@quality} -interlace Plane"
+  def convert_base width=nil
+    width   = width.to_i
+    unsharp = @ext == 'jpeg' && width > 0 && width < 201 ? '-unsharp 4x2+1+0' : ''
+    "convert '#{@src_in_cache}' #{unsharp} -auto-orient -alpha #{@ext == 'jpg' ? 'remove -background white' : 'on'} -strip -quality #{@quality} -interlace Plane"
   end
 
   def optimize
@@ -94,7 +95,7 @@ class ImageResizer
   def resize_width size
     resize_do "resized/w_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}" do
       log 'WIDTH of %s to %d' % [@image, size]
-      run "#{convert_base} -resize #{size}x '#{@target}'"
+      run "#{convert_base(size)} -resize #{size}x '#{@target}'"
     end
   end
 
@@ -116,12 +117,12 @@ class ImageResizer
         # crop with offset, without resize
         dimension = "#{width}x#{height}+#{x_offset}+#{y_offset}"
         log 'CROP %s to %s' % [@image, dimension]
-        run "#{convert_base} -crop #{dimension} -gravity #{gravity} -extent #{width}x#{height} #{@target}"
+        run "#{convert_base(width)} -crop #{dimension} -gravity #{gravity} -extent #{width}x#{height} #{@target}"
       else
         # regular resize crop
         dimension = "#{width}x#{height}^"
         log 'CROP %s to %s' % [@image, dimension]
-        run "#{convert_base} -resize #{dimension} -gravity #{gravity} -extent #{width}x#{height} #{@target}"
+        run "#{convert_base(width)} -resize #{dimension} -gravity #{gravity} -extent #{width}x#{height} #{@target}"
       end
     end
   end
