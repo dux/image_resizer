@@ -16,8 +16,8 @@ module App
     app.deliver
   end
 
-  def log text
-    LOGGER.info text
+  def log
+    LOGGER
   end
 
   def is_local?
@@ -29,6 +29,7 @@ module App
   end
 
   def die text
+    log.error text
     puts text.red
     exit
   end

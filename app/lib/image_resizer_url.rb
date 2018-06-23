@@ -25,6 +25,7 @@ module ImageResizerUrl
 
     data
   rescue
+    App.log.error $!.message
     data = { image: 'https://i.imgur.com/odix6P2.png', size: '200x200' }
   end
 
@@ -42,12 +43,6 @@ module ImageResizerUrl
 
     # add check
     data.push Digest::SHA1.hexdigest(RESIZER_SECRET+data.first)[0,4]
-
-    # add name if it is defined
-    if name
-      name = '~%s' % name.to_s.gsub(/[^\w\-\.]+/,'_')[0,30]
-      name = name.sub(/\.\w{3,4}$/,'')
-    end
 
     data.push '.'
 

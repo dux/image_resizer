@@ -29,7 +29,7 @@ class ImageResizer
   end
 
   def log text
-    App.log text
+    App.log.info text
   end
 
   def content_type
