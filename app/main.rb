@@ -17,6 +17,7 @@ require_relative 'routes'
 
 require_relative 'lib/image_resizer_url'
 require_relative 'lib/image_resizer'
+require_relative 'render_image'
 
 # exit unless imagemagic convert is found
 App.die('ImageMagic convert not found in path') if `which convert` == ''
@@ -29,4 +30,7 @@ for dir in ['cache','cache/originals', 'cache/resized', 'cache/pages', 'cache/cr
   dir = "#{App.root}/#{dir}"
   Dir.mkdir(dir) unless Dir.exists?(dir)
 end
+
+
+
 
