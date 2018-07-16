@@ -13,9 +13,9 @@ def render_image
   resize_height ||= @params[:height].to_i
 
   return "Width and height from :size are 0" unless resize_width > 10 || resize_height > 10
-  return 'Image to large' if resize_width > 1500 || resize_height > 1500
+  return 'Image to large, max 1600' if resize_width > 1600 || resize_height > 1600
 
-  @params[:q] = 85 if @params[:q] < 10
+  @params[:q] = 90 if @params[:q] < 10
 
   reload = false
   reload = true if @params[:reload]
