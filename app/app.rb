@@ -4,7 +4,7 @@ module App
   extend self
 
   ICON     = File.read('./public/favicon.ico')
-  LOG_FILE = './log/%s.log' % ENV['RACK_ENV']
+  LOG_FILE = ENV.fetch('RACK_ENV') == 'development' ? STDOUT : './log/production.log'
   LOGGER   = Logger.new(LOG_FILE, 'weekly')
   ROOT     = File.expand_path('..', File.dirname(__FILE__))
 
@@ -16,8 +16,12 @@ module App
     app.deliver
   end
 
-  def log
-    LOGGER
+  def log data=nil
+    if data
+      puts data.yellow if App.is_local?
+    else
+      LOGGER
+    end
   end
 
   def is_local?

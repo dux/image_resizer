@@ -21,7 +21,7 @@ def render_image
   reload = true if @params[:reload]
   # reload = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
 
-  img = ImageResizer.new image: image, quality: @params[:q], reload: reload, is_local: App.is_local?
+  img = ImageResizer.new image: image, quality: @params[:q], reload: reload, is_local: App.is_local?, as_webp: request.env['HTTP_ACCEPT'].to_s.include?('image/webp')
 
   file = if resize_width > 0 && resize_height > 0
     gravity = @params[:gravity].to_s.downcase

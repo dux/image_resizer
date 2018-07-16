@@ -3,7 +3,7 @@
 class ImageResizer
   attr_reader :ext, :image, :original, :resized
 
-  def initialize image:, quality:80, reload:nil, is_local:false
+  def initialize image:, quality:80, reload:nil, is_local:false, as_webp: false
     ext = image.split('.').reverse[0].to_s
     ext = 'jpeg' unless ext.length > 2 && ext.length < 5
     ext = 'jpeg' if ext == 'jpg'
@@ -13,6 +13,7 @@ class ImageResizer
     @quality      = quality < 10 || quality > 100 ? 80 : quality
     @src_in_cache = "#{App.root}/cache/originals/#{md5(@image)}.#{@ext}"
     @reload       = reload
+    @as_webp      = as_webp
 
     File.unlink(@src_in_cache) if @reload && File.exist?(@src_in_cache)
   end
@@ -24,6 +25,7 @@ class ImageResizer
   end
 
   def run what
+    App.log what
     # puts what
     system "#{what} 2>&1"
   end
@@ -57,15 +59,23 @@ class ImageResizer
   end
 
   def convert_base width=nil
-    width   = width.to_i
-    unsharp = @ext == 'jpeg' && width > 0 && width < 201 ? '-unsharp 4x2+1+0' : ''
-    "convert '#{@src_in_cache}' #{unsharp} -auto-orient -alpha #{@ext == 'jpg' ? 'remove -background white' : 'on'} -strip -quality #{@quality} -interlace Plane"
+    width = width.to_i
+
+    opts  = []
+    opts.push "-auto-orient"
+    opts.push "-alpha #{@ext == 'jpg' ? 'remove -background white' : 'on'}"
+    opts.push "-strip"
+    opts.push "-quality #{@quality}"
+    opts.push '-unsharp 4x2+1+0' if @ext == 'jpeg' && width > 0 && width < 101
+    opts.push '-interlace Plane'
+
+    'convert "%s" %s' % [@src_in_cache, opts.join(' ')]
   end
 
   def optimize
     case @ext
       when 'png'
-        run "pngquant -f --output #{@target} --strip #{@target}"
+        run "pngquant -f --output #{@target} --strip #{@target}" unless @as_webp
       # not needed with imagemagic?
       # when 'jpeg'
       #   run "jpegoptim #{@target}"
@@ -74,6 +84,7 @@ class ImageResizer
 
   def resize_do img_path
     @target = '%s/cache/%s' % [App.root, img_path]
+
     File.unlink(@target) if @reload && File.exist?(@target)
 
     return @src_in_cache if @ext == 'svg'
@@ -89,7 +100,14 @@ class ImageResizer
       return './public/error.png'
     end
 
-    @target
+    if @as_webp
+      @ext = 'webp'
+      new_target = @target.sub(/\.\w+$/, '.webp') if @as_webp
+      WebP.encode(@target, new_target, quality: 90)
+      new_target
+    else
+      @target
+    end
   end
 
   def resize_width size
@@ -117,7 +135,7 @@ class ImageResizer
         # crop with offset, without resize
         dimension = "#{width}x#{height}+#{x_offset}+#{y_offset}"
         log 'CROP %s to %s' % [@image, dimension]
-        run "#{convert_base(width)} -crop #{dimension} -gravity #{gravity} -extent #{width}x#{height} #{@target}"
+        run "#{convert_base(width)} -crop #{dimension} -gravity #{gravity} -extent #{width}x#{height} '#{@target}'"
       else
         # regular resize crop
         dimension = "#{width}x#{height}^"

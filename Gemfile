@@ -5,6 +5,7 @@ gem 'rack'
 gem 'json'
 gem 'dotenv'
 gem 'sinatra'
+gem 'webp-ffi'
 
 group :development do
   gem 'awesome_print'

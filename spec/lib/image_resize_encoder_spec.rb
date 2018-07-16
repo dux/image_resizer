@@ -38,5 +38,15 @@ describe 'image resizer' do
 
     expect(size).to eq 100
   end
+
+  it 'shoud have webp encoder' do
+    puts 'WEBP encoder https://github.com/le0pard/webp-ffi'
+
+    if `which apt-get`.to_s == ''
+      system 'brew install libjpg libpng libtiff webp'
+    else
+      system 'sudo apt-get install libjpeg-dev libpng-dev libtiff-dev libwebp-dev'
+    end
+  end
 end
 
