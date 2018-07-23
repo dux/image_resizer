@@ -15,6 +15,9 @@ class ImageResizer
     @reload       = reload
     @as_webp      = as_webp
 
+    # gif has errors and png has no
+    @as_webp = false unless ext == 'jpeg'
+
     File.unlink(@src_in_cache) if @reload && File.exist?(@src_in_cache)
   end
 
