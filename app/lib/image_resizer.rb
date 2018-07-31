@@ -33,7 +33,7 @@ class ImageResizer
   end
 
   def run what
-    App.log what
+    log what
     # puts what
     system "#{what} 2>&1"
   end

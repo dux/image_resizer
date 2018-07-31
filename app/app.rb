@@ -19,6 +19,7 @@ module App
   def log data=nil
     if data
       puts data.yellow if App.is_local?
+      LOGGER.info data
     else
       LOGGER
     end
