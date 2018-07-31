@@ -17,5 +17,16 @@
 
     <img src="<%= @url %>" />
 
+
+    <h3>Quick tester<h3>
+
+    <table>
+      <% for size in [200, 'x200', '200x200', '^200x200'] %>
+        <tr>
+          <td>size: <%= size %></td>
+          <td><img src="/r?image=<%= params[:image] %>&size=<%= size %>" ></td>
+        </tr>
+      <% end %>
+    </table>
   </body>
 </html>

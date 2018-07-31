@@ -18,7 +18,7 @@ module ImageResizerUrl
       data = data.inject({}) { |it, (k,v)| it[k.to_sym] = v; it }
     end
 
-    # bad check
+    # if check fails
     unless Digest::SHA1.hexdigest(RESIZER_SECRET+base)[0,4] == check
       data[:image] = 'https://i.imgur.com/wgdf507.jpg'
     end
@@ -34,8 +34,6 @@ module ImageResizerUrl
   #   size:  "222x222"
   # }
   def get opts
-    name = opts.delete(:name)
-
     data = []
 
     # add base
@@ -51,6 +49,7 @@ module ImageResizerUrl
     ext = 'jpg' unless ['jpg', 'jpeg', 'gif', 'png'].index(ext)
     data.push ext
 
+    # return full url
     [RESIZER_URL, data.join('')].join('/r/')
   end
 

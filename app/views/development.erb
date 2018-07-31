@@ -21,22 +21,16 @@
         var opts = {}, url = [], val, width, height;
 
         document.getElementById('error').innerHTML = '';
-        width  = parseInt(document.getElementById('width').value || 0);
-        height = parseInt(document.getElementById('height').value || 0);
 
         for (el of ['image', 'q']) {
           val = document.getElementById(el).value;
           if (val) opts[el] = val
         }
 
-        opts.size = String(width)+'x'+String(height)
+        opts.size = document.getElementById('size').value || 200;
 
         if (! opts.image) {
           return inform('Image URL is required');
-        }
-
-        if (opts.size == '0x0') {
-          return inform('width or height is required');
         }
 
         for (k of Object.keys(opts)) {
@@ -59,18 +53,20 @@
   <h3>v <%= @version %></h3>
 
   <h2>Usage</h2>
-  <pre>ResizeEncoder.url({ image:'', crop: x })</pre>
+  <pre>ResizeEncoder.url({ image: 'https://...', size: '200' })</pre>
 
   <h2>Options</h2>
 
   <ul>
-    <li><b>q</b> - quality - 10..95</li>
-    <li><b>gravity</b> crop gravity - North:default, East, West, South</li>
-    <li><b>image</b> - source image</li>
+    <li><b>q</b>uality - 10..95</li>
+    <li><b>i</b>mage - source image</li>
     <li>
-      <b>size</b> - num || 200x300
+      <b>s</b>ize
       <ul>
-        <li>200 => 200x200 - if yu send only one number, it becomes square crop</li>
+        <li>200 => 200x - resize width to 200px</li>
+        <li>x200 => resize height to 200px</li>
+        <li>200x200 => resize to max 200 width or max 200 height</li>
+        <li>^200x200 => crop resize to 200x200, gravity North</li>
       </ul>
     </li>
   </ul>
@@ -88,7 +84,7 @@
     </tr>
     <tr>
       <td class="l">Size (Width x Height)</td>
-      <td><input id="width" placeholder="200" /> x <input id="height" placeholder="0" /></td>
+      <td><input id="size" placeholder="200" /></td>
     </tr>
     <tr>
       <td class="l">Quality</td>

@@ -3,17 +3,24 @@
 class ImageResizer
   attr_reader :ext, :image, :original, :resized
 
-  def initialize image:, quality:80, reload:nil, is_local:false, as_webp: false
+  def initialize image:, size:, quality: nil, reload: false, as_webp: false
     ext = image.split('.').reverse[0].to_s
     ext = 'jpeg' unless ext.length > 2 && ext.length < 5
     ext = 'jpeg' if ext == 'jpg'
 
     @image        = image
     @ext          = ext.downcase
-    @quality      = quality < 10 || quality > 100 ? 80 : quality
-    @src_in_cache = "#{App.root}/cache/originals/#{md5(@image)}.#{@ext}"
+    @quality      = quality < 10 || quality > 100 ? 90 : quality
+    @src_in_cache = "#{App.root}/cache/originals/#{sha1(@image)}.#{@ext}"
     @reload       = reload
     @as_webp      = as_webp
+    @size         = size.to_s
+
+    # check max width and height
+    max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 1600 }).to_i
+    @width, @height = @size.to_s.split('x').map(&:to_i)
+    raise ArgumentError.new("Width and height from :size are 0") unless @width > 10 || @height > 10
+    raise ArgumentError.new('Image to large, max 1600') if max_size > 1600 || max_size > 1600
 
     # gif has errors and png has no
     @as_webp = false unless ext == 'jpeg'
@@ -21,10 +28,8 @@ class ImageResizer
     File.unlink(@src_in_cache) if @reload && File.exist?(@src_in_cache)
   end
 
-  def md5 data
-    ret = Digest::MD5.hexdigest data
-    ret[2,0] = ''
-    ret
+  def sha1 data
+    Digest::SHA1.hexdigest data
   end
 
   def run what
@@ -61,18 +66,24 @@ class ImageResizer
     @src_in_cache
   end
 
-  def convert_base width=nil
-    width = width.to_i
+  def convert_base
+    size = @size
+    size += 'x' if size =~ /^\d+$/
 
-    opts  = []
-    opts.push "-auto-orient"
-    opts.push "-alpha #{@ext == 'jpg' ? 'remove -background white' : 'on'}"
-    opts.push "-strip"
+    opts = []
+    opts.push '-auto-orient'
+    opts.push '-strip'
     opts.push "-quality #{@quality}"
-    opts.push '-unsharp 4x2+1+0' if @ext == 'jpeg' && width > 0 && width < 101
+    opts.push '-resize %s' % size
+    opts.push '-unsharp 4x2+1+0' if @ext == 'jpeg' && @width > 0 && @width < 101
     opts.push '-interlace Plane'
 
-    'convert "%s" %s' % [@src_in_cache, opts.join(' ')]
+    if size.include?('^')
+      opts.push '-gravity North'
+      opts.push '-extent %s' % size.sub('^','')
+    end
+
+    run 'convert "%s" %s %s' % [@src_in_cache, opts.join(' '), @target]
   end
 
   def optimize
@@ -85,7 +96,9 @@ class ImageResizer
     end
   end
 
-  def resize_do img_path
+  def resize
+    img_path = "resized/s#{@size}-q#{@quality}-#{sha1(@image)}.#{@ext}"
+
     @target = '%s/cache/%s' % [App.root, img_path]
 
     File.unlink(@target) if @reload && File.exist?(@target)
@@ -94,7 +107,7 @@ class ImageResizer
 
     unless File.exists? @target
       download
-      yield
+      convert_base
       optimize
     end
 
@@ -106,45 +119,10 @@ class ImageResizer
     if @as_webp
       @ext = 'webp'
       new_target = @target.sub(/\.\w+$/, '.webp') if @as_webp
-      WebP.encode(@target, new_target, quality: 90)
+      WebP.encode(@target, new_target, quality: @quality)
       new_target
     else
       @target
-    end
-  end
-
-  def resize_width size
-    resize_do "resized/w_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}" do
-      log 'WIDTH of %s to %d' % [@image, size]
-      run "#{convert_base(size)} -resize #{size}x '#{@target}'"
-    end
-  end
-
-  def resize_height size
-    resize_do "resized/h_#{size}-q#{@quality}-#{md5(@image)}.#{@ext}" do
-      log 'HEIGHT of %s to %d' % [@image, size]
-      run "#{convert_base} -resize x#{size} '#{@target}'"
-    end
-  end
-
-  def crop size, gravity
-    size.gsub!(' ','+')
-    width, height, x_offset, y_offset = size.to_s.downcase.split(/[x\+]/)
-    height ||= width
-    raise 'Image to large' if width.to_i > 1500 || height.to_i > 1500
-
-    resize_do "croped/#{size}-q#{@quality}-#{md5(@image)}.#{@ext}" do
-      if y_offset
-        # crop with offset, without resize
-        dimension = "#{width}x#{height}+#{x_offset}+#{y_offset}"
-        log 'CROP %s to %s' % [@image, dimension]
-        run "#{convert_base(width)} -crop #{dimension} -gravity #{gravity} -extent #{width}x#{height} '#{@target}'"
-      else
-        # regular resize crop
-        dimension = "#{width}x#{height}^"
-        log 'CROP %s to %s' % [@image, dimension]
-        run "#{convert_base(width)} -resize #{dimension} -gravity #{gravity} -extent #{width}x#{height} #{@target}"
-      end
     end
   end
 end
