@@ -9,7 +9,7 @@ describe 'image resizer' do
     }
   }
 
-  let(:url) { ImageResizerUrl.get(params) }
+  let(:url) { params[:image].resize_image(params[:size]) }
 
   [:jpegoptim, :curl, :convert, :pngquant].each do |app|
     it 'shoud find %s' % app do
@@ -32,13 +32,13 @@ describe 'image resizer' do
   ###
 
   it 'shoud generate pack url' do
-    expect(url.length).to eq(111)
+    expect(url.length).to eq(102)
   end
 
   it 'shoud unpack url' do
     base = url.split('/r/').last
-    opts = ImageResizerUrl.unpack(base)
-    expect(opts[:size]).to eq(params[:size])
+    opts = unpack_url(base)
+    expect(opts[:s]).to eq(params[:size])
   end
 
   it 'shoud resize image width' do

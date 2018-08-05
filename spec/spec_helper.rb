@@ -13,18 +13,4 @@ RSpec.configure do |config|
   config.formatter = :documentation # :progress, :html, :json, CustomFormatterClass
 end
 
-require 'digest'
-require 'json'
-require 'base64'
-require 'openssl'
-require 'dotenv'
-require 'bundler/setup'
-require 'logger'
-require 'awesome_print'
-
-Dotenv.load
-
-require './app/app'
-
-require './app/lib/image_resizer_url'
-require './app/lib/image_resizer'
+require './app/libs'
