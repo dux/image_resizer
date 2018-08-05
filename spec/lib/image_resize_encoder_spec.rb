@@ -17,6 +17,20 @@ describe 'image resizer' do
     end
   end
 
+  ###
+
+  def get_resize_base size
+    img     = ImageResizer.new image: params[:image], quality: 80, reload: true, size: size
+    resized = img.resize
+
+    expect(File.exists?(resized)).to eq(true)
+
+    info = `identify #{resized}`.split(' ')
+    info[2].split('x').map(&:to_i)
+  end
+
+  ###
+
   it 'shoud generate pack url' do
     expect(url.length).to eq(111)
   end
@@ -27,26 +41,43 @@ describe 'image resizer' do
     expect(opts[:size]).to eq(params[:size])
   end
 
-  it 'shoud resize image' do
-    img     = ImageResizer.new image: params[:image], quality: 80, reload: true
-    resized = img.resize_width(100)
+  it 'shoud resize image width' do
+    width, _ = get_resize_base 100
 
-    expect(File.exists?(resized)).to eq(true)
-
-    info = `identify #{resized}`.split(' ')
-    size = info[3].split('x').first.to_i
-
-    expect(size).to eq 100
+    expect(width).to eq 100
   end
 
-  it 'shoud have webp encoder' do
-    puts 'WEBP encoder https://github.com/le0pard/webp-ffi'
+  it 'shoud resize image height' do
+    _, height = get_resize_base 'x100'
 
-    if `which apt-get`.to_s == ''
-      system 'brew install libjpg libpng libtiff webp'
-    else
-      system 'sudo apt-get install libjpeg-dev libpng-dev libtiff-dev libwebp-dev'
+    expect(height).to eq 100
+  end
+
+  it 'shoud resize to fit' do
+    width, height = get_resize_base '100x100'
+
+    expect(width).to eq 56
+    expect(height).to eq 100
+  end
+
+  it 'shoud resize crop' do
+    width, height = get_resize_base '^100x100'
+
+    expect(width).to eq 100
+    expect(height).to eq 100
+  end
+
+  puts 'WEBP encoder https://github.com/le0pard/webp-ffi'
+
+  if `which apt-get`.to_s == ''
+    for lib in %w{libjpg libpng libtiff webp}
+      it "shoud have brew lib #{lib}" do
+        system 'brew install #{lib}' if `brew list #{lib}`.include?('Error:')
+        expect(`brew list #{lib}`.include?('Error:')).to eq false
+      end
     end
+  else
+    system 'sudo apt-get install libjpeg-dev libpng-dev libtiff-dev libwebp-dev'
   end
 end
 
