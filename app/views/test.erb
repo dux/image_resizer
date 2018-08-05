@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Resize test</title>
+</head>
+<body>
+<p>Seconds to reisze 100 images: <b id="total">calculating ...</b> seconds</p>
+<p>Click on the image to see original image</p>
+<table>
+  <tr>
+    <td>Resize to</td><td><input type="text" id="size" value="200" /> <button onclick="draw_thumbs(document.getElementById('size').value)">Go!</button></td>
+  </tr>
+</table>
+<br />
+<br />
+<div id="target" onload="alert(1)"></div>
+<script><%= @movies_json %></script>
+<script>
+window.r_time = function() {
+  document.getElementById('total').innerHTML = (new Date() - window.start)/1000
+}
+
+window.draw_thumbs = function(size) {
+  document.getElementById('total').innerHTML = '...'
+
+  var size = document.getElementById('size').value;
+
+  target.innerHTML = '';
+
+  window.start = new Date();
+
+  for (var i=0; i<100; i++) {
+    target.innerHTML += '<a href="'+imgs[i]+'"><img onload="r_time()" style="border:1px solid #aaa; margin-right:10px; margin-bottom:10px;" src="/r?size='+size+'&image='+imgs[i]+'" /></a>'
+  }
+}
+
+draw_thumbs(200);
+</script>
+
+</body>
+</html>
