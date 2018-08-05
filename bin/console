@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require './app/main'
+require './app/loader'
 
 begin
   require 'pry'

@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 
-require './app/main'
+require './app/loader'
 
 run Sinatra::Application
