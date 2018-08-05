@@ -3,51 +3,32 @@ Sinatra/ImageMagic image resizer
 
 Fast and stable image resizer, written in Ruby
 
-/r
+Delivers `webp` images to browsers that support the format.
 
-* image  = source image
-* size   = width x height
-* width  = width
-* height = height
-* q      = quality (10 - 100)
+## To use on a client
 
-/pack?image=foo&size=bar
+```ruby
+require "./app/lib/url_builder"
 
-* just use pack insted of resize
-* render URL PACKED FOR PRODUCTION
+ENV["RESIZER_SECRET"] = "foobarbaz"
+ENV["RESIZER_URL"]    = "https://resizer.myapp.com"
 
-/r/HASH.jpg => production
+@image.url.image_resize("200")      # resize image width to 200px
+@image.url.image_resize("x200")     # resize image height to 200px
+@image.url.image_resize("200x200")  # resize image to fix 200x200 box
+@image.url.image_resize("^200x200") # resize crop image width to 200x200
+```
 
-Copy ImageResizer class for resizeing on production server.
+## To install on a server
 
-* ImageResizerUrl.get({ image:'http://some-destinat.io/n.jpg', width:100 })
+Install image magic
 
-
-### localhost examples
-
-http://0.0.0.0:4000/r?size=200&image=https://i.imgur.com/jQ55JGT.jpg
-
-http://0.0.0.0:4000/r?size=200x300&image=https://i.imgur.com/jQ55JGT.jpg
-
-http://0.0.0.0:4000/r?width=200&image=https://i.imgur.com/jQ55JGT.jpg
-
-
-### crontab clear cache
-
-1 * * * * /home/user/apps/rack_image_resizer/bin/clear_cache && curl -fsS --retry 3 https://hchk.io/sid > /dev/null
-
-
-### Production installation
-
-Clone the app
-
-`git clone https://github.com/dux/rack_image_resizer.git image_resizer`
-
-chdir an bundle
-
-`cd image_resizer`
-
-`bundle`
+```
+git clone https://github.com/dux/rack_image_resizer.git
+cd rack_image_resizer
+bundle install
+rspec
+```
 
 add to `.env`
 
@@ -56,11 +37,48 @@ RESIZER_SECRET=...
 RACK_ENV=production
 ```
 
-Install image magic
+Run via puma or passanger, it is a rack app.
+
+## In development
+
+`bash ./run_development`
+
+or
+
+`puma -p 4000`
+
+In root you will find image resize tester.
+
+/r
+
+* image   = source image
+* size    = width x height
+* quality = quality (10 - 100)
+
+/pack?image=http://.../foo.jpg&size=200
+
+* just use pack insted of resize
+* render URL PACKED FOR PRODUCTION
+
+/r/HASH.jpg => production
+
+### localhost examples
+
+http://0.0.0.0:4000/r?size=200&image=https://i.imgur.com/jQ55JGT.jpg
+
+http://0.0.0.0:4000/r?size=x200&image=https://i.imgur.com/jQ55JGT.jpg
+
+http://0.0.0.0:4000/r?size=200x300&image=https://i.imgur.com/jQ55JGT.jpg
+
+http://0.0.0.0:4000/r?size=^200x200&image=https://i.imgur.com/jQ55JGT.jpg
+
+## crontab clear cache
+
+1 * * * * /home/user/apps/rack_image_resizer/bin/clear_cache
 
 Check installation with `rspec`
 
-### In your ruby app
+## In your ruby app
 
 Copy `./lib/image_resizer_url.rb` to `..app/lib`
 
@@ -71,15 +89,13 @@ RESIZER_SECRET=...
 RESIZER_URL=https://resizer.ypurapp.com
 ```
 
-Resize images with `ImageResizerUrl.get({image: "http://...", size:  "200x200"})`
+## View log
 
-### View log
-
-View last 500 log entries
+View last 1000 log entries
 
 `/log?secret=ENV[RESIZER_SECRET]`
 
-### why?
+## why?
 
 Small, fast & has everything I need
 
