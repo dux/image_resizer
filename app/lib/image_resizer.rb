@@ -11,7 +11,7 @@ class ImageResizer
     @image        = image
     @ext          = ext.downcase
     @quality      = quality < 10 || quality > 100 ? 90 : quality
-    @src_in_cache = "#{App.root}/cache/originals/#{sha1(@image)}.#{@ext}"
+    @src_in_cache = "#{App.root}/cache/o/#{sha1(@image)}.#{@ext}"
     @reload       = reload
     @as_webp      = as_webp
     @size         = size.to_s
@@ -26,6 +26,8 @@ class ImageResizer
     @as_webp = false unless ext == 'jpeg'
 
     File.unlink(@src_in_cache) if @reload && File.exist?(@src_in_cache)
+
+    App.log 'RESIZE "%s" TO "%s"' % [@image, @size]
   end
 
   def sha1 data
@@ -33,13 +35,9 @@ class ImageResizer
   end
 
   def run what
-    log what
+    App.dev_log what
     # puts what
     system "#{what} 2>&1"
-  end
-
-  def log text
-    App.log.info text
   end
 
   def content_type
@@ -56,9 +54,9 @@ class ImageResizer
       run "curl -L '#{@image}' --create-dirs -s -o '#{@src_in_cache}'"
 
       if File.exists?(@src_in_cache)
-        log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@src_in_cache).size/1024]
+        App.log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@src_in_cache).size/1024]
       else
-        log 'ERROR %s (cant download)' % @image
+        App.log 'ERROR %s (cant download)' % @image
         return @src_in_cache = './public/error.png'
       end
     end
@@ -97,11 +95,13 @@ class ImageResizer
   end
 
   def resize
-    img_path = "resized/s#{@size}-q#{@quality}-#{sha1(@image)}.#{@ext}"
+    img_path = "r/s#{@size}/q#{@quality}-#{sha1(@image)}.#{@ext}"
 
     @target = '%s/cache/%s' % [App.root, img_path]
+    target_dir = @target.sub(%r{/[^/]+$}, '')
 
     File.unlink(@target) if @reload && File.exist?(@target)
+    FileUtils.mkdir_p(target_dir) unless Dir.exist?(target_dir)
 
     return @src_in_cache if @ext == 'svg'
 
