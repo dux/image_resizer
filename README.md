@@ -35,6 +35,7 @@ add to `.env`
 ```
 RESIZER_SECRET=...
 RACK_ENV=production
+RESIZER_CACHE_CLEAR=2d  # clear unacceded images every 2 days
 ```
 
 Run via puma or passanger, it is a rack app.

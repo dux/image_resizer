@@ -17,6 +17,7 @@ App.die('RESIZER_SECRET not defined') unless ENV['RESIZER_SECRET']
   Dir.exists?('./cache') &&
   `find ./cache -type f`.length > 0
 
+puts '* Clearing cached images every %s' % ENV['RESIZER_CACHE_CLEAR']
 
 
 

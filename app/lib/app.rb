@@ -11,6 +11,8 @@ module App
 
   LOGGER.formatter = proc { |severity, datetime, progname, msg| "#{datetime}: #{msg}\n" }
 
+  @@last_cache_check = 0
+
   def call env
     app = new env
     app.router
@@ -41,5 +43,28 @@ module App
     log.error text
     puts text.red
     exit
+  end
+
+  def clear_cache
+    # check every hour
+    if (@@last_cache_check + 11) < Time.now.to_i
+      ap ['check 1']
+      @@last_cache_check = Time.now.to_i
+      clear_cache_do
+    end
+  end
+
+  def clear_cache_do
+    interval = ENV['RESIZER_CACHE_CLEAR']
+    base     = "find ./cache -depth -type f -atime +#{interval}"
+
+    dev_log base
+
+    files = `#{base}`.split($/).length
+
+    if files > 0
+      `#{base} -delete`
+      log 'CLEARED %d file/s from cache dirs with formula +%s' % [files, interval]
+    end
   end
 end

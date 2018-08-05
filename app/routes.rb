@@ -14,6 +14,8 @@ get '/pack' do
 end
 
 get '/r/*' do
+  App.clear_cache
+
   data    = params[:splat].first.sub(/\.\w{3,4}$/,'')
   @params = unpack_url data
 
@@ -39,6 +41,8 @@ if App.is_local?
   end
 
   get '/r' do
+    App.clear_cache
+
     @params = params
 
     render_image
