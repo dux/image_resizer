@@ -18,7 +18,8 @@ class ImageResizer
 
     # check max width and height
     max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 1600 }).to_i
-    @width, @height = @size.to_s.split('x').map(&:to_i)
+    @width, @height = @size.to_s.sub('^','').split('x').map(&:to_i)
+
     raise ArgumentError.new("Width and height from :size are 0") unless @width > 10 || @height > 10
     raise ArgumentError.new('Image to large, max 1600') if max_size > 1600 || max_size > 1600
 
@@ -67,6 +68,7 @@ class ImageResizer
   def convert_base
     size = @size
     size += 'x' if size =~ /^\d+$/
+    size += 'x'+size.sub('^','') if size.include?('^') && !size.include?('x')
 
     opts = []
     opts.push '-auto-orient'

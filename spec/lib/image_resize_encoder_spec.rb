@@ -67,6 +67,13 @@ describe 'image resizer' do
     expect(height).to eq 100
   end
 
+  it 'shoud resize crop simple' do
+    width, height = get_resize_base '^110'
+
+    expect(width).to eq 110
+    expect(height).to eq 110
+  end
+
   puts 'WEBP encoder https://github.com/le0pard/webp-ffi'
 
   if `which apt-get`.to_s == ''

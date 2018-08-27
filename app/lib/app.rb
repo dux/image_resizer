@@ -48,7 +48,6 @@ module App
   def clear_cache
     # check every hour
     if (@@last_cache_check + 11) < Time.now.to_i
-      ap ['check 1']
       @@last_cache_check = Time.now.to_i
       clear_cache_do
     end
