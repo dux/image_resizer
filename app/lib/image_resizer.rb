@@ -97,18 +97,17 @@ class ImageResizer
   end
 
   def resize
-    img_path = "r/s#{@size}/q#{@quality}-#{sha1(@image)}.#{@ext}"
+    download
 
-    @target = '%s/cache/%s' % [App.root, img_path]
+    return @src_in_cache if @ext == 'svg'
+
+    @target = [App.root, "r/s#{@size}/q#{@quality}-#{sha1(@image)}.#{@ext}"].join('/cache/')
     target_dir = @target.sub(%r{/[^/]+$}, '')
 
     File.unlink(@target) if @reload && File.exist?(@target)
     FileUtils.mkdir_p(target_dir) unless Dir.exist?(target_dir)
 
-    return @src_in_cache if @ext == 'svg'
-
     unless File.exists? @target
-      download
       convert_base
       optimize
     end
