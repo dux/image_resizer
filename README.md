@@ -12,11 +12,14 @@ require "./app/lib/url_builder"
 
 ENV["RESIZER_SECRET"] = "foobarbaz"
 ENV["RESIZER_URL"]    = "https://resizer.myapp.com"
+ENV["UNSHARP_MASK"]   = '4x2+1+0'   # defaults to 1x1+1+0
 
 @image.url.image_resize("200")      # resize image width to 200px
 @image.url.image_resize("x200")     # resize image height to 200px
 @image.url.image_resize("200x200")  # resize image to fix 200x200 box
 @image.url.image_resize("^200x200") # resize crop image width to 200x200
+@image.url.image_resize("^200")     # resize crop image width to 200x200
+@image.url.image_resize("u^100")    # resize crop image width to 100x100 and apply unsparp mask
 ```
 
 ## To install on a server

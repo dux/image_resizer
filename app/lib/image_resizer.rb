@@ -18,10 +18,10 @@ class ImageResizer
 
     # check max width and height
     max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 1600 }).to_i
-    @width, @height = @size.to_s.sub('^','').split('x').map(&:to_i)
 
-    raise ArgumentError.new("Width and height from :size are 0") unless @width > 10 || @height > 10
-    raise ArgumentError.new('Image to large, max 1600') if max_size > 1600 || max_size > 1600
+    for el in @size.split('x').map { |it| it.gsub(/[^\d]/, '').to_i }
+      raise ArgumentError.new('Image to large, max 1600') if el && el > max_size
+    end
 
     # gif has errors and png has no
     @as_webp = false unless ext == 'jpeg'
@@ -66,16 +66,25 @@ class ImageResizer
   end
 
   def convert_base
-    size = @size
-    size += 'x' if size =~ /^\d+$/
-    size += 'x'+size.sub('^','') if size.include?('^') && !size.include?('x')
+    size    = @size
+
+    do_unsharp =
+      if size.include?('u')
+        size = size.sub('u','')
+        true
+      else
+        false
+      end
+
+    size   += 'x' if size =~ /^\d+$/
+    size   += 'x'+size.sub('^','') if size.include?('^') && !size.include?('x')
 
     opts = []
     opts.push '-auto-orient'
     opts.push '-strip'
     opts.push "-quality #{@quality}"
     opts.push '-resize %s' % size
-    opts.push '-unsharp 4x2+1+0' if @ext == 'jpeg' && @width > 0 && @width < 101
+    opts.push '-unsharp %s' % ENV.fetch('UNSHARP_MASK') { '1x1+1+0' } if do_unsharp && @ext == 'jpeg'
     opts.push '-interlace Plane'
 
     if size.include?('^')
