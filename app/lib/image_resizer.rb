@@ -76,8 +76,9 @@ class ImageResizer
         false
       end
 
-    size   += 'x' if size =~ /^\d+$/
-    size   += 'x'+size.sub('^','') if size.include?('^') && !size.include?('x')
+    size  = size.sub('c','^')
+    size += 'x' if size =~ /^\d+$/
+    size += 'x'+size.sub('^','') if size.include?('^') && !size.include?('x')
 
     opts = []
     opts.push '-auto-orient'
@@ -86,6 +87,7 @@ class ImageResizer
     opts.push '-resize %s' % size
     opts.push '-unsharp %s' % ENV.fetch('UNSHARP_MASK') { '1x1+1+0' } if do_unsharp && @ext == 'jpeg'
     opts.push '-interlace Plane'
+    opts.push '-background none' if @ext == 'png'
 
     if size.include?('^')
       opts.push '-gravity North'
