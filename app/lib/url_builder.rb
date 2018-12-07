@@ -6,6 +6,9 @@ class String
   # "http://foo.jpg".resize_image({ s: "222x222", q: 80 }
   # "http://foo.jpg".resize_image("^200x200")
   def resize_image opts
+    # return empty pixel unless self
+    return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" if self.blank?
+
     opts = { s: opts } unless Hash === opts
     opts[:i] = self
 

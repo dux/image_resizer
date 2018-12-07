@@ -6,6 +6,7 @@ gem 'json'
 gem 'dotenv'
 gem 'sinatra'
 gem 'webp-ffi'
+gem 'fast_blank'
 
 group :development do
   gem 'awesome_print'
