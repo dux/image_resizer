@@ -133,6 +133,7 @@ class ImageResizer
       new_target = @target.sub(/\.\w+$/, '.webp') if @as_webp
       WebP.encode(@target, new_target, quality: @quality)
       new_target
+      # cwebp [options] -q quality input.png -o output.webp
     else
       @target
     end
