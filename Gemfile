@@ -5,12 +5,11 @@ if @inferred_plugins
 
   if $stdin.gets.chomp.upcase == 'Y'
     puts 'WEBP encoder https://github.com/le0pard/webp-ffi'
+
     if `which apt-get`.to_s == ''
-      for lib in %w{libjpg libpng libtiff webp}
-        system "brew install #{lib}"
-      end
+      system "brew install libjpg libpng libtiff webp imagemagick pngquant jpegoptim"
     else
-      system 'sudo apt-get install libjpeg-dev libpng-dev libtiff-dev libwebp-dev'
+      system 'sudo apt-get install libjpeg-dev libpng-dev libtiff-dev libwebp-dev imagemagick pngquant jpegoptim'
     end
   end
 end

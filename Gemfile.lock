@@ -8,6 +8,9 @@ GEM
     dotenv (2.5.0)
     fast_blank (1.0.0)
     ffi (1.9.25)
+    ffi-compiler (1.0.1)
+      ffi (>= 1.0.0)
+      rake
     json (2.1.0)
     listen (3.1.5)
       rb-fsevent (~> 0.9, >= 0.9.4)
@@ -22,6 +25,7 @@ GEM
     rack (2.0.6)
     rack-protection (2.0.4)
       rack
+    rake (12.3.2)
     rb-fsevent (0.10.3)
     rb-inotify (0.9.10)
       ffi (>= 0.5.0, < 2)
@@ -47,6 +51,9 @@ GEM
       rack-protection (= 2.0.4)
       tilt (~> 2.0)
     tilt (2.0.9)
+    webp-ffi (0.2.5)
+      ffi (>= 1.9.0)
+      ffi-compiler (>= 0.1.2)
 
 PLATFORMS
   ruby
@@ -63,6 +70,7 @@ DEPENDENCIES
   rerun
   rspec
   sinatra
+  webp-ffi
 
 BUNDLED WITH
    1.16.1
