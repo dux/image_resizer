@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe 'image resizer' do
 
+
   let(:params) {
     {
       image: 'http://i.imgur.com/krurDGE.jpg',
@@ -23,16 +24,16 @@ describe 'image resizer' do
     img     = ImageResizer.new image: params[:image], quality: 80, reload: true, size: size
     resized = img.resize
 
-    expect(File.exists?(resized)).to eq(true)
+    expect(File.exists?(img.resized)).to eq(true)
 
-    info = `identify #{resized}`.split(' ')
+    info = `identify #{img.resized}`.split(' ')
     info[2].split('x').map(&:to_i)
   end
 
   ###
 
   it 'shoud generate pack url' do
-    expect(url.length).to eq(102)
+    expect(url.length).to eq(94)
   end
 
   it 'shoud unpack url' do

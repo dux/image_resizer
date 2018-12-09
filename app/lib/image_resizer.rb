@@ -1,20 +1,21 @@
 # main class that handles image resizing
 
 class ImageResizer
-  attr_reader :ext, :image, :original, :resized
+  attr_reader :ext, :image, :original, :resized, :cache_path
 
-  def initialize image:, size:, quality: nil, reload: false, as_webp: false
+  def initialize image:, size:, error: nil, quality: nil, reload: false, as_webp: false
     ext = image.split('.').reverse[0].to_s
     ext = 'jpeg' unless ext.length > 2 && ext.length < 5
     ext = 'jpeg' if ext == 'jpg'
 
-    @image        = image
-    @ext          = ext.downcase
-    @quality      = quality < 10 || quality > 100 ? App::QUALITY : quality
-    @src_in_cache = "#{App.root}/cache/o/#{sha1(@image)}.#{@ext}"
-    @reload       = reload
-    @as_webp      = as_webp
-    @size         = size.to_s
+    @image    = image
+    @ext      = ext.downcase
+    @quality  = quality < 10 || quality > 100 ? App::QUALITY : quality
+    @original = "#{App.root}/cache/o/#{sha1(@image)}.#{@ext}"
+    @reload   = reload
+    @as_webp  = as_webp
+    @size     = size.to_s
+    @error    = error
 
     # check max width and height
     max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 1600 }).to_i
@@ -26,7 +27,7 @@ class ImageResizer
     # gif has errors and png has no
     @as_webp = false unless ext == 'jpeg'
 
-    File.unlink(@src_in_cache) if @reload && File.exist?(@src_in_cache)
+    File.unlink(@original) if @reload && File.exist?(@original)
 
     App.log 'RESIZE "%s" TO "%s"' % [@image, @size]
   end
@@ -37,7 +38,7 @@ class ImageResizer
 
   def run what
     App.dev_log what
-    # puts what
+    puts what
     system "#{what} 2>&1"
   end
 
@@ -50,19 +51,23 @@ class ImageResizer
     end
   end
 
-  def download
-    unless File.exists?(@src_in_cache)
-      run "curl -L '#{@image}' --create-dirs -s -o '#{@src_in_cache}'"
+  def error msg=nil
+    return @error unless msg
+    @error = App.error msg
+  end
 
-      if File.exists?(@src_in_cache)
-        App.log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@src_in_cache).size/1024]
+  def download
+    unless File.exists?(@original)
+      run "curl '#{@image}' --create-dirs -s -o '#{@original}'"
+
+      if File.exists?(@original)
+        App.log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@original).size/1024]
       else
-        App.log 'ERROR %s (cant download)' % @image
-        return @src_in_cache = './public/error.png'
+        raise "Can't download source from %s" % @image
       end
     end
 
-    @src_in_cache
+    @original
   end
 
   def convert_base
@@ -94,48 +99,69 @@ class ImageResizer
       opts.push '-extent %s' % size.sub('^','')
     end
 
-    run 'convert "%s" %s %s' % [@src_in_cache, opts.join(' '), @target]
+    run 'convert "%s" %s %s' % [@original, opts.join(' '), @resized]
   end
 
   def optimize
     case @ext
       when 'png'
-        run "pngquant -f --output #{@target} --strip #{@target}" unless @as_webp
+        run "pngquant -f --output #{@resized} --strip #{@resized}" unless @as_webp
       # not needed with imagemagic?
       # when 'jpeg'
-      #   run "jpegoptim #{@target}"
+      #   run "jpegoptim #{@resized}"
     end
   end
 
+  def svg_error
+    @ext = 'svg'
+
+    %{<?xml version="1.0" standalone="no"?>
+      <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+        <rect x="0" y="0" width="100%" height="100%" style="fill:#fee; stroke:#fcc; stroke-width:7px;" />
+        <text x="50%" y="50%" fill="#800" text-anchor="middle" alignment-baseline="central">#{@error.capitalize}</text>
+      </svg>
+    }
+  end
+
   def resize
+    raise @error if @error
+
     download
 
-    return @src_in_cache if @ext == 'svg'
+    return @original if @ext == 'svg'
 
-    @target = [App.root, "r/s#{@size}/q#{@quality}-#{sha1(@image)}.#{@ext}"].join('/cache/')
-    target_dir = @target.sub(%r{/[^/]+$}, '')
+    @resized = [App.root, "r/s#{@size}/q#{@quality}-#{sha1(@image)}.#{@ext}"].join('/cache/')
+    target_dir = @resized.sub(%r{/[^/]+$}, '')
 
-    File.unlink(@target) if @reload && File.exist?(@target)
+    File.unlink(@resized) if @reload && File.exist?(@resized)
     FileUtils.mkdir_p(target_dir) unless Dir.exist?(target_dir)
 
-    unless File.exists? @target
+    unless File.exists? @resized
       convert_base
       optimize
     end
 
-    unless File.exists? @target
-      File.unlink(@src_in_cache)
-      return './public/error.png'
+    unless File.exists? @resized
+      File.unlink(@original)
+      raise 'Resize error'
     end
 
+    @cache_path =
     if @as_webp
       @ext = 'webp'
-      new_target = @target.sub(/\.\w+$/, '.webp') if @as_webp
-      WebP.encode(@target, new_target, quality: @quality)
-      new_target
+      new_target = @resized.sub(/\.\w+$/, '.webp') if @as_webp
+      WebP.encode(@resized, new_target, quality: @quality)
       # cwebp [options] -q quality input.png -o output.webp
+      new_target
     else
-      @target
+      @resized
     end
+
+    File.read @cache_path
+
+  rescue => e
+    @error = e.message
+    @error = 'Resize error' if @error.include?('No such file')
+    svg_error
   end
 end
