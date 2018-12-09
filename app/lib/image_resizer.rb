@@ -10,7 +10,7 @@ class ImageResizer
 
     @image        = image
     @ext          = ext.downcase
-    @quality      = quality < 10 || quality > 100 ? 90 : quality
+    @quality      = quality < 10 || quality > 100 ? App::QUALITY : quality
     @src_in_cache = "#{App.root}/cache/o/#{sha1(@image)}.#{@ext}"
     @reload       = reload
     @as_webp      = as_webp

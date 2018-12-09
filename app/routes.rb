@@ -7,8 +7,10 @@ get '/' do
 end
 
 get '/pack' do
-  image = param.delete(:image)
-  @url = image.resize_image(params[:size])
+  @image = params.delete(:image)
+  @size  = params.delete(:size)
+  @url1  = @image.resize_image(@size)
+  @url2  = '%s?s=%s' % [@image.resize_image, @size]
 
   erb :pack
 end
@@ -16,8 +18,7 @@ end
 get '/r/*' do
   App.clear_cache
 
-  data    = params[:splat].first.sub(/\.\w{3,4}$/,'')
-  @params = unpack_url data
+  @params = unpack_url params[:splat].first
 
   render_image
 end

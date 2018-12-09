@@ -43,18 +43,25 @@ def unpack_url url_part
   url_part    = url_part.sub(/\.\w+$/, '')
   base, check = url_part.slice!(0...-4), url_part
 
-  begin
-    data = JSON.load Base64.urlsafe_decode64(base)
+  data = Base64.urlsafe_decode64(base)
+
+  if data[0,1] == '{'
+    data = JSON.load data
     data = data.inject({}) { |it, (k,v)| it[k.to_sym] = v; it }
+  else
+    data = { i: data }
+    data[:s] = params[:s] || params[:size]
   end
+
+  data[:i] = data[:i].sub(/(\w)/) { $1 == 's' ? 'https://' : 'http://' }
 
   # if check fails
   unless Digest::SHA1.hexdigest(App::SECRET+base)[0,4] == check
-    data[:image] = 'https://i.imgur.com/wgdf507.jpg'
+    data[:i] = 'https://i.imgur.com/wgdf507.jpg'
   end
 
   data
-rescue
-  App.log.error $!.message
-  data = { image: 'https://i.imgur.com/odix6P2.png', size: '200x200' }
+rescue => e
+  App.error e
+  data = { i: 'https://i.imgur.com/odix6P2.png', size: '200x200' }
 end

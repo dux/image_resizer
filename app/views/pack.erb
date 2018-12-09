@@ -6,17 +6,23 @@
   <body>
     <h3>On server</h3>
 
-    <pre>ImageResizerUrl.get(<%= JSON.pretty_generate(@params) %>)</pre>
+<pre>
+'<%= @image %>'.resize_image('<%= @size %>')
+ => <a href="<%= @url1 %>"><%= @url1 %></a>
+
+'<%= @image %>'.resize_image + '?s=<%= @size %>'
+ => <a href="<%= @url2 %>"><%= @url2 %></a>
+</pre>
+
     <hr />
 
     <h3>Will output</h3>
-    <a href="<%= @url %>"><%= @url %></a>
 
     <br />
     <br />
 
-    <img src="<%= @url %>" />
-
+    <img src="<%= @url1 %>" style="border: 1px solid #ccc;" />
+    <img src="<%= @url2 %>" style="border: 1px solid #ccc;" />
 
     <h3>Quick tester<h3>
 
@@ -24,7 +30,7 @@
       <% for size in [200, 'x200', '200x200', '^200x200'] %>
         <tr>
           <td>size: <%= size %></td>
-          <td><img src="/r?image=<%= params[:image] %>&size=<%= size %>" ></td>
+          <td><img src="/r?image=<%= @image %>&size=<%= size %>" ></td>
         </tr>
       <% end %>
     </table>
