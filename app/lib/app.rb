@@ -47,8 +47,9 @@ module App
   end
 
   def error err
-    puts 'Error: %s' % err.message.red
-    App.log.error err.message
+    msg = err.respond_to?(:message) ? err.message : err
+    puts 'Error: %s' % msg.red
+    App.log.error msg
   end
 
   def clear_cache

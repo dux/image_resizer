@@ -58,6 +58,7 @@ def unpack_url url_part
   # if check fails
   unless Digest::SHA1.hexdigest(App::SECRET+base)[0,4] == check
     data[:i] = 'https://i.imgur.com/wgdf507.jpg'
+    App.error 'image prefix hash check failed for %s' % data
   end
 
   data
