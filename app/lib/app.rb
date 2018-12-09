@@ -8,6 +8,7 @@ module App
   LOGGER   = Logger.new(LOG_FILE, 'weekly')
   ROOT     = File.expand_path('../..', File.dirname(__FILE__))
   SECRET   = ENV.fetch('RESIZER_SECRET')
+  QUALITY  = ENV.fetch('QUALITY') { 90 }
 
   LOGGER.formatter = proc { |severity, datetime, progname, msg| "#{datetime}: #{msg}\n" }
 
@@ -43,6 +44,11 @@ module App
     log.error text
     puts text.red
     exit
+  end
+
+  def error err
+    puts 'Error: %s' % err.message.red
+    App.log.error err.message
   end
 
   def clear_cache
