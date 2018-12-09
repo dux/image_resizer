@@ -9,10 +9,10 @@ def unpack_url url_part
     data = data.inject({}) { |it, (k,v)| it[k.to_sym] = v; it }
   else
     data = { i: data }
-    data[:s] = params[:s] || params[:size]
   end
 
   data[:i] = data[:i].sub(/(\w)/) { $1 == 's' ? 'https://' : 'http://' }
+  data[:s] ||= params[:s] || params[:size]
 
   # if check fails
   unless Digest::SHA1.hexdigest(App::SECRET+base)[0,4] == check
@@ -27,9 +27,10 @@ end
 
 def render_image
   # fix params
-  @params[:quality] = (@params[:quality] || @params[:q]).to_i
-  @params[:size]  ||= @params[:s]
-  @params[:image] ||= @params[:i]
+  @params[:quality]     = (@params[:quality] || @params[:q]).to_i
+  @params[:size]      ||= @params[:s]
+  @params[:image]     ||= @params[:i]
+  @params[:watermark] ||= @params[:w]
 
   # define etag and return from cache if possible
   @etag = '"%s"' % Digest::SHA1.hexdigest([@params[:quality], @params[:size], @params[:image]].join('-'))
@@ -45,11 +46,12 @@ def render_image
   # @params[:reload] = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
 
   img = ImageResizer.new image: @params[:image],
-    size:    @params[:size],
-    quality: @params[:quality],
-    reload:  !!@params[:reload],
-    error:   @error,
-    as_webp: request.env['HTTP_ACCEPT'].to_s.include?('image/webp')
+    size:      @params[:size],
+    quality:   @params[:quality],
+    reload:    !!@params[:reload],
+    watermark: @params[:watermark],
+    error:     @error,
+    as_webp:   request.env['HTTP_ACCEPT'].to_s.include?('image/webp')
 
   data = img.resize
 

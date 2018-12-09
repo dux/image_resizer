@@ -9,7 +9,8 @@ end
 get '/pack' do
   @image = params.delete(:image)
   @size  = params.delete(:size)
-  @url1  = @image.resize_image(@size)
+
+  @url1  = @image.resize_image(s: @size, w: params[:w])
   @url2  = '%s?s=%s' % [@image.resize_image, @size]
 
   erb :pack

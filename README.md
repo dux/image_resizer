@@ -25,6 +25,23 @@ ENV["UNSHARP_MASK"]   = '4x2+1+0'   # defaults to 1x1+1+0
 @image.url.image_resize + '?s=x200' # dinamicly assign resize attributes
 ```
 
+### To add and watermark
+
+
+
+Define `image:gravity:opacity-percent`.
+
+Image: PNG in public folder of image resize server. Example `./public/watermark1.png`.
+Gravity: None, Center, East, Forget, NorthEast, North, NorthWest, SouthEast (default), South, SouthWest, West
+Opacity-percent: 30 - default.
+
+Following code will apply watermark to lower right corner of the image, width 400px.
+
+```ruby
+@image.url.image_resize(s: 400, w: "watermark1:SouthEast:30")
+```
+
+
 ## To install on a server
 
 Install image magic

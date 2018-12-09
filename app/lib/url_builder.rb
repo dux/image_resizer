@@ -41,3 +41,9 @@ class String
     [ENV.fetch('RESIZER_URL'), data.join('')].join('/r/')
   end
 end
+
+class NilClass
+  def blank?
+    true
+  end
+end

@@ -3,19 +3,20 @@
 class ImageResizer
   attr_reader :ext, :image, :original, :resized, :cache_path
 
-  def initialize image:, size:, error: nil, quality: nil, reload: false, as_webp: false
+  def initialize image:, size:, error: nil, quality: nil, watermark: nil, reload: false, as_webp: false
     ext = image.split('.').reverse[0].to_s
     ext = 'jpeg' unless ext.length > 2 && ext.length < 5
     ext = 'jpeg' if ext == 'jpg'
 
-    @image    = image
-    @ext      = ext.downcase
-    @quality  = quality < 10 || quality > 100 ? App::QUALITY : quality
-    @original = "#{App.root}/cache/o/#{sha1(@image)}.#{@ext}"
-    @reload   = reload
-    @as_webp  = as_webp
-    @size     = size.to_s
-    @error    = error
+    @image     = image
+    @ext       = ext.downcase
+    @quality   = quality < 10 || quality > 100 ? App::QUALITY : quality
+    @original  = "#{App.root}/cache/o/#{sha1(@image)}.#{@ext}"
+    @reload    = reload
+    @as_webp   = as_webp
+    @size      = size.to_s
+    @error     = error
+    @watermark = watermark
 
     # check max width and height
     max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 1600 }).to_i
@@ -38,7 +39,6 @@ class ImageResizer
 
   def run what
     App.dev_log what
-    puts what
     system "#{what} 2>&1"
   end
 
@@ -123,14 +123,29 @@ class ImageResizer
     }
   end
 
+  def apply_watermark
+    return if @watermark.blank?
+
+    image, gravity, percent = @watermark.split(':')
+    gravity ||= 'SouthEast' # None, Center, East, Forget, NorthEast, North, NorthWest, SouthEast, South, SouthWest, West
+    percent ||= 30
+
+    run "composite -watermark 30% -gravity #{gravity} ./public/#{image}.png #{@resized} #{@resized}"
+  end
+
   def resize
     raise @error if @error
-
     download
 
-    return @original if @ext == 'svg'
+    return File.read(@original) if @ext == 'svg'
 
-    @resized = [App.root, "r/s#{@size}/q#{@quality}-#{sha1(@image)}.#{@ext}"].join('/cache/')
+    # if size not provided, only apply quality filter
+    if @size.blank?
+      info  = `identify #{@original}`.split(' ')
+      @size = info[2]
+    end
+
+    @resized = [App.root, "r/s#{@size}/q#{@quality}-#{sha1(@image+@watermark.to_s)}.#{@ext}"].join('/cache/')
     target_dir = @resized.sub(%r{/[^/]+$}, '')
 
     File.unlink(@resized) if @reload && File.exist?(@resized)
@@ -138,6 +153,7 @@ class ImageResizer
 
     unless File.exists? @resized
       convert_base
+      apply_watermark
       optimize
     end
 
@@ -158,7 +174,6 @@ class ImageResizer
     end
 
     File.read @cache_path
-
   rescue => e
     @error = e.message
     @error = 'Resize error' if @error.include?('No such file')
