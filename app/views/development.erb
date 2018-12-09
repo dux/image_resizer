@@ -54,9 +54,17 @@
 
   <h2>Usage</h2>
   <pre>
-    "http://foo.jpg".resize_image({ s: "222x222", q: 80 }
-    "http://foo.jpg".resize_image("^200x200")
-    "http://foo.jpg".resize_image - expcts size as param
+    # resize to 222x222, no crop, 80 quality
+    @image.resize_image({ s: "222x222", q: 80 }
+
+    # resize crop to 200x200, default server quality (90)
+    @image.resize_image("^200x200")
+
+    # expcts size as param
+    @image.resize_image
+
+    # resize width to 400px, add watermark from ./public/watermark1.png, gravity SouthEast, 30% opacity
+    @image.resize_image(s: 400, w: "watermark1:SouthEast:30")
   </pre>
 
   <h2>Options</h2>
