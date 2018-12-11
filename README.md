@@ -8,26 +8,32 @@ Delivers `webp` images to browsers that support the format.
 ## To use on a client
 
 ```ruby
-require "./app/lib/url_builder"
+require "rack_image_resizer"
 
-ENV["RESIZER_SECRET"] = "foobarbaz"
-ENV["RESIZER_URL"]    = "https://resizer.myapp.com"
-ENV["UNSHARP_MASK"]   = '4x2+1+0'   # defaults to 1x1+1+0
+RackImageResizer.secret = "foobarbaz"
+RackImageResizer.url    = "https://resizer.myapp.com"
 
-@image.url.image_resize("200")      # resize image width to 200px
-@image.url.image_resize("x200")     # resize image height to 200px
-@image.url.image_resize("200x200")  # resize image to fix 200x200 box
-@image.url.image_resize("^200x200") # resize crop image width to 200x200
-@image.url.image_resize("^200")     # resize crop image width to 200x200
-@image.url.image_resize("u^100")    # resize crop image width to 100x100 and apply unsharp mask
+class String
+  def resized opts=nil
+    opts ||= {}
+    opts[:i] = self
+
+    RackImageResizer.get opts
+  end
+end
+
+@image.url.resized("200")      # resize image width to 200px
+@image.url.resized("x200")     # resize image height to 200px
+@image.url.resized("200x200")  # resize image to fix 200x200 box
+@image.url.resized("^200x200") # resize crop image width to 200x200
+@image.url.resized("^200")     # resize crop image width to 200x200
+@image.url.resized("u^100")    # resize crop image width to 100x100 and apply unsharp mask
 
 # or
-@image.url.image_resize + '?s=x200' # dinamicly assign resize attributes
+@image.url.resized + '?s=x200' # dinamicly assign resize attributes
 ```
 
 ### To add and watermark
-
-
 
 Define `image:gravity:opacity-percent`.
 
@@ -38,13 +44,13 @@ Opacity-percent: 30 - default.
 Following code will apply watermark to lower right corner of the image, width 400px.
 
 ```ruby
-@image.url.image_resize(s: 400, w: "watermark1:SouthEast:30")
+@image.url.resized(s: 400, w: "watermark1:SouthEast:30")
 ```
 
 
 ## To install on a server
 
-Install image magic
+Clone and bundle
 
 ```
 git clone https://github.com/dux/rack_image_resizer.git

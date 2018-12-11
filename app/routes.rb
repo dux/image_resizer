@@ -10,8 +10,8 @@ get '/pack' do
   @image = params.delete(:image)
   @size  = params.delete(:size)
 
-  @url1  = @image.resize_image(s: @size, w: params[:w])
-  @url2  = '%s?s=%s' % [@image.resize_image, @size]
+  @url1  = @image.resized(s: @size, w: params[:w])
+  @url2  = '%s?s=%s' % [@image.resized, @size]
 
   erb :pack
 end
@@ -27,7 +27,7 @@ end
 get '/log' do
   return 'secret not defined' unless params[:secret] == ENV.fetch('RESIZER_SECRET')
 
-  lines = `tail -n 1000 ./log/production.log`.split($/).reverse.join("\n\n")
+  lines = `tail -n 2000 ./log/production.log`.split($/).reverse.join("\n")
 
   content_type :text
 

@@ -1,6 +1,8 @@
 require 'dotenv'
 Dotenv.load
 
+Dir.mkdir('./tmp') unless Dir.exist?('./tmp')
+
 port 4000
 
 if ENV['RACK_ENV'] == 'production'

@@ -7,10 +7,10 @@
     <h3>On server</h3>
 
 <pre>
-'<%= @image %>'.resize_image('<%= @size %>')
+'<%= @image %>'.resized('<%= @size %>')
  => <a href="<%= @url1 %>"><%= @url1 %></a>
 
-'<%= @image %>'.resize_image + '?s=<%= @size %>'
+'<%= @image %>'.resized + '?s=<%= @size %>'
  => <a href="<%= @url2 %>"><%= @url2 %></a>
 
  # add &w=watermark parameter to add test watermark from "./public/watermark.png"
