@@ -10,8 +10,8 @@ Delivers `webp` images to browsers that support the format.
 ```ruby
 require "rack_image_resizer"
 
-RackImageResizer.secret = "foobarbaz"
-RackImageResizer.url    = "https://resizer.myapp.com"
+RackImageResizer.set :secret, "foobarbaz"
+RackImageResizer.set :url,    "https://resizer.myapp.com"
 
 class String
   def resized opts=nil
