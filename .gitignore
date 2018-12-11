@@ -1,5 +1,7 @@
 cache/
 tmp/
 log/
+
 .env
+*.gem
 
