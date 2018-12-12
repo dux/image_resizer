@@ -20,6 +20,9 @@ module ::RackImageResizer
   def build opts
     opts[:i] ||= opts.delete(:image)
     opts[:s] ||= opts.delete(:size) if opts[:size]
+    opts[:e] ||= opts.delete(:onerror) if opts[:onerror]
+
+    opts[:e] = get(:host) + opts[:e] if opts[:e] && opts[:e] !~ %r{^https?://}
 
     # return empty pixel unless self
     return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" if opts[:i].to_s == ''

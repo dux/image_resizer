@@ -55,15 +55,20 @@ def render_image
 
   data = img.resize
 
-  App.error "#{img.error} for image #{@params[:image]}, from #{request.referrer}" if img.error
-
   response.headers['x-source']            = @params[:image] unless ENV['X_SOURCE'] == 'false'
+  response.headers['cache-control']       = 'public, max-age=10000000, no-transform'
   response.headers['accept-ranges']       = 'bytes'
   response.headers['etag']                = @etag
-  response.headers['cache-control']       = 'public, max-age=10000000, no-transform'
+
+  if img.error
+    App.error "#{img.error} for image #{@params[:image]}, from #{request.referrer}"
+    redirect @params[:e] if @params[:e]
+  end
+
   response.headers['content-type']        = "image/#{img.content_type}"
   response.headers['content-length']      = data.bytesize
   response.headers['content-disposition'] = 'inline'
+
   response.status = img.error ? 400 : 200
 
   data
