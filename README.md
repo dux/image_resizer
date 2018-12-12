@@ -13,14 +13,7 @@ require "rack_image_resizer"
 RackImageResizer.set :secret, "foobarbaz"
 RackImageResizer.set :url,    "https://resizer.myapp.com"
 
-class String
-  def resized opts=nil
-    opts ||= {}
-    opts[:i] = self
-
-    RackImageResizer.get opts
-  end
-end
+# RackImageResizer.build s: '^200x100'
 
 @image.url.resized("200")      # resize image width to 200px
 @image.url.resized("x200")     # resize image height to 200px
