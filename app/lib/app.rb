@@ -12,7 +12,7 @@ module App
 
   LOGGER.formatter = proc { |severity, datetime, progname, msg| "#{datetime}: #{msg}\n" }
 
-  @@last_cache_check = 0
+  @last_cache_check = 0
 
   def call env
     app = new env
@@ -54,8 +54,8 @@ module App
 
   def clear_cache
     # check every hour
-    if (@@last_cache_check + 11) < Time.now.to_i
-      @@last_cache_check = Time.now.to_i
+    if (@last_cache_check + 3600) < Time.now.to_i
+      @last_cache_check = Time.now.to_i
       clear_cache_do
     end
   end
