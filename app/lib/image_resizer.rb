@@ -4,7 +4,7 @@ class ImageResizer
   attr_reader :ext, :image, :original, :resized, :cache_path
 
   def initialize image:, size:, error: nil, quality: nil, watermark: nil, reload: false, as_webp: false
-    ext = image.split('.').reverse[0].to_s
+    ext = image.split('?').first.split('.').reverse[0].to_s.downcase
     ext = 'jpeg' unless ext.length > 2 && ext.length < 5
     ext = 'jpeg' if ext == 'jpg'
 
