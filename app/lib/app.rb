@@ -69,7 +69,8 @@ module App
     files = `#{base}`.split($/).length
 
     if files > 0
-      `#{base} -delete`
+      Thread.new { system "#{base} -delete" }
+
       log 'CLEARED %d file/s from cache dirs with formula +%s' % [files, interval]
     end
   end
