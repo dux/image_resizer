@@ -1,4 +1,5 @@
 require 'spec_helper'
+require './app/router_helper'
 
 describe 'image resizer' do
 
@@ -10,7 +11,7 @@ describe 'image resizer' do
     }
   }
 
-  let(:url) { params[:image].resize_image(params[:size]) }
+  let(:url) { params[:image].resized(params[:size]) }
 
   [:jpegoptim, :curl, :convert, :pngquant].each do |app|
     it 'shoud find %s' % app do
