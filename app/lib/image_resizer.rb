@@ -124,7 +124,7 @@ class ImageResizer
   end
 
   def apply_watermark
-    return if @watermark.blank?
+    return unless @watermark
 
     image, gravity, percent = @watermark.split(':')
     gravity ||= 'SouthEast' # None, Center, East, Forget, NorthEast, North, NorthWest, SouthEast, South, SouthWest, West
@@ -140,7 +140,7 @@ class ImageResizer
     return File.read(@original) if @ext == 'svg'
 
     # if size not provided, only apply quality filter
-    if @size.blank?
+    if @size.to_s == ''
       info  = `identify #{@original}`.split(' ')
       @size = info[2]
     end

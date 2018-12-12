@@ -11,7 +11,6 @@ Dotenv.load
 Bundler.require
 
 require_relative 'lib/app'
-require_relative 'lib/extensions'
 require_relative 'lib/image_resizer'
 require_relative '../gem/lib/rack_image_resizer'
 
