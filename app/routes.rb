@@ -34,6 +34,16 @@ get '/log' do
   lines
 end
 
+get '/favicon.ico' do
+  data = File.read './public/favicon.ico'
+
+  response.headers['cache-control']  = 'public, max-age=10000000, no-transform'
+  response.headers['content-type']   = "image/png"
+  response.headers['content-length'] = data.bytesize
+
+  data
+end
+
 # only in development
 if App.is_local?
   get '/test' do

@@ -48,7 +48,7 @@ def render_image
   img = ImageResizer.new image: @params[:image],
     size:      @params[:size],
     quality:   @params[:quality],
-    reload:    !!@params[:reload],
+    reload:  !!@params[:reload],
     watermark: @params[:watermark],
     error:     @error,
     as_webp:   request.env['HTTP_ACCEPT'].to_s.include?('image/webp')
@@ -64,6 +64,7 @@ def render_image
   response.headers['content-type']        = "image/#{img.content_type}"
   response.headers['content-length']      = data.bytesize
   response.headers['content-disposition'] = 'inline'
+  response.status = img.error ? 400 : 200
 
   data
 end
