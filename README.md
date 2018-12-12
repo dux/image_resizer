@@ -11,7 +11,7 @@ Delivers `webp` images to browsers that support the format.
 require "rack_image_resizer"
 
 RackImageResizer.set :secret, "foobarbaz"
-RackImageResizer.set :url,    "https://resizer.myapp.com"
+RackImageResizer.set :server, "https://resizer.myapp.com"
 
 # RackImageResizer.build s: '^200x100'
 
@@ -74,51 +74,21 @@ In root you will find image resize tester.
 
 /r
 
-* image   = source image
-* size    = width x height
-* quality = quality (10 - 100)
+* [i]mage     = source image
+* [s]ize      = width x height
+* [q]uality   = quality (10 - 100)
+* [w]atermark = image:gravity:opacity-percent
+* on[e]error  = image to show in case of error
 
 /pack?image=http://.../foo.jpg&size=200
 
-* just use pack insted of resize
-* render URL PACKED FOR PRODUCTION
-
-/r/HASH.jpg => production
-
-### localhost examples
-
-http://0.0.0.0:4000/r?size=200&image=https://i.imgur.com/jQ55JGT.jpg
-
-http://0.0.0.0:4000/r?size=x200&image=https://i.imgur.com/jQ55JGT.jpg
-
-http://0.0.0.0:4000/r?size=200x300&image=https://i.imgur.com/jQ55JGT.jpg
-
-http://0.0.0.0:4000/r?size=^200x200&image=https://i.imgur.com/jQ55JGT.jpg
-
-## crontab clear cache
-
-1 * * * * /home/user/apps/rack_image_resizer/bin/clear_cache
-
-Check installation with `rspec`
-
-## In your ruby app
-
-Copy `./lib/image_resizer_url.rb` to `..app/lib`
-
-Add the same secret to ENV and add RESIZER_URL ENV var
-
-```
-RESIZER_SECRET=...
-RESIZER_URL=https://resizer.ypurapp.com
-```
-
 ## View log
 
-View last 1000 log entries
+View last 2000 log entries
 
 `/log?secret=ENV[RESIZER_SECRET]`
 
 ## why?
 
-Small, fast & has everything I need
+Small, fast & has everything a dev needs
 
