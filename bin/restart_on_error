@@ -2,8 +2,8 @@
 
 Dir.chdir __dir__.sub(%r{/bin$}, '')
 
-puts "install as crontab:"
-puts "*/1 * * * * bash -l -c 'ruby #{Dir.pwd}/bin/restart_on_error'"
+puts "install as crontab, chech every 1 min:"
+puts "*/1 * * * * #{`which ruby`.chomp} #{Dir.pwd}/bin/restart_on_error"
 puts
 
 require 'dotenv'
@@ -14,6 +14,11 @@ server = ENV.fetch('RESIZER_SERVER')
 status = `curl --connect-timeout 5 --max-time 5 -sL -w "%{http_code}\\n" "#{server}" -o /dev/null`.chomp.to_i
 
 logger = Logger.new('log/restart_on_error.log', 'weekly')
+logger.formatter = proc do |severity, datetime, progname, msg|
+  time = datetime.to_s.split(' ')[0,2].join(' ')
+  msg = "#{severity} : #{msg}" if severity != 'INFO'
+  "[#{time}] #{msg}\n"
+end
 
 if status == 200
   info   = 'ok'
@@ -27,3 +32,5 @@ else
 end
 
 puts info
+
+puts File.read 'log/restart_on_error.log'
