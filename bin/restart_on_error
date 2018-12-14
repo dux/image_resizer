@@ -32,5 +32,3 @@ else
 end
 
 puts info
-
-puts File.read 'log/restart_on_error.log'

@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+
+require 'thread'
+
+class ThreadPool
+  def initialize(max_threads = 10)
+    @pool = SizedQueue.new(max_threads)
+    max_threads.times{ @pool << 1 }
+    @mutex = Mutex.new
+    @running_threads = []
+  end
+
+  def run(&block)
+    @pool.pop
+    @mutex.synchronize do
+      @running_threads << Thread.start do
+        begin
+          block[]
+        rescue Exception => e
+          puts "Exception: #{e.message}\n#{e.backtrace}"
+        ensure
+          @pool << 1
+        end
+      end
+    end
+  end
+
+  def await_completion
+    @running_threads.each &:join
+  end
+end
+
+###
+
+def resize_image img, size
+  url = img.resized(size)
+  start = Time.now.to_i
+  status = `curl --connect-timeout 10 --max-time 10 -sL -w "%{http_code}\\n" "#{url}" -o /dev/null`.chomp.to_i
+
+  if status == 200
+    print '.'
+  else
+    puts "#{status} #{size} #{(Time.now - start).to_f} ERROR"
+  end
+end
+
+###
+
+require './app/loader'
+require './gem/lib/string'
+
+img     = ARGV[0]
+times   = ARGV[1].to_i
+times   = 200 if times == 0
+threads = 50
+
+unless img.to_s.include?('http')
+  puts "Usage: bin/test [image] [times default 200]"
+  exit
+end
+
+server = RackImageResizer.get :server
+pool   = ThreadPool.new threads
+
+puts img
+
+time = Time.now
+cnt  = 0
+
+for x in (100..150).to_a
+  break if cnt > times
+
+  for y in (100..150).to_a
+    cnt += 1
+    pool.run do
+      resize_image img, "c#{x}x#{y}"
+    end
+  end
+end
+
+pool.await_completion
+
+seconds = (Time.now-time).to_f
+
+puts
+puts '%s seconds for %d images, avg %s ms per image' % [seconds, cnt, ((seconds/cnt)*1000).to_i]
+
