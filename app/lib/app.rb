@@ -3,12 +3,13 @@
 module App
   extend self
 
-  ICON     = File.read('./public/favicon.ico')
-  LOG_FILE = ENV.fetch('RACK_ENV') == 'development' ? STDOUT : './log/production.log'
-  LOGGER   = Logger.new(LOG_FILE, 'weekly')
-  ROOT     = File.expand_path('../..', File.dirname(__FILE__))
-  SECRET   = ENV.fetch('RESIZER_SECRET')
-  QUALITY  = ENV.fetch('QUALITY') { 90 }
+  ICON           = File.read('./public/favicon.ico')
+  LOG_FILE       = ENV.fetch('RACK_ENV') == 'development' ? STDOUT : './log/production.log'
+  LOGGER         = Logger.new(LOG_FILE, 'weekly')
+  ROOT           = File.expand_path('../..', File.dirname(__FILE__))
+  SECRET         = ENV.fetch('RESIZER_SECRET')
+  QUALITY        = ENV.fetch('QUALITY') { 90 }
+  CLEAR_INTERVAL = ENV.fetch('RESIZER_CACHE_CLEAR') { 2 }
 
   LOGGER.formatter = proc { |severity, datetime, progname, msg| "#{datetime}: #{msg}\n" }
 
@@ -61,17 +62,13 @@ module App
   end
 
   def clear_cache_do
-    interval = ENV['RESIZER_CACHE_CLEAR']
-    base     = "find ./cache -depth -type f -atime +#{interval}"
+    base = "find ./cache -depth -type f -atime #{CLEAR_INTERVAL}"
+    count = `#{base} | wc -l`.chomp.to_i
 
-    dev_log base
-
-    files = `#{base}`.split($/).length
-
-    if files > 0
+    if count > 0
       Thread.new { system "#{base} -delete" }
 
-      log 'CLEARED %d file/s from cache dirs with formula +%s' % [files, interval]
+      log 'CLEARED %d file/s from cache dirs, older than %s days' % [files, interval]
     end
   end
 end

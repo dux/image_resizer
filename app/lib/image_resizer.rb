@@ -105,10 +105,7 @@ class ImageResizer
   def optimize
     case @ext
       when 'png'
-        run "pngquant -f --output #{@resized} --strip #{@resized}" unless @as_webp
-      # not needed with imagemagic?
-      # when 'jpeg'
-      #   run "jpegoptim #{@resized}"
+        run "pngquant -f --output #{@resized} --strip #{@resized}"
     end
   end
 
@@ -165,9 +162,8 @@ class ImageResizer
     @cache_path =
     if @as_webp
       @ext = 'webp'
-      new_target = @resized.sub(/\.\w+$/, '.webp') if @as_webp
-      WebP.encode(@resized, new_target, quality: @quality)
-      # cwebp [options] -q quality input.png -o output.webp
+      new_target = @resized.sub(/\.\w+$/, '.webp')
+      run "cwebp -quiet -q #{@quality.to_i - 15} #{@resized} -o #{new_target}"
       new_target
     else
       @resized

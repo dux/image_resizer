@@ -2,4 +2,4 @@
 
 cd "$(dirname "$0")"
 
-find ../cache -depth -type f -atime +2d -delete
+find ../cache -depth -type f -atime 2 -delete

@@ -34,7 +34,7 @@ describe 'image resizer' do
   ###
 
   it 'shoud generate pack url' do
-    expect(url.length).to eq(94)
+    expect(url.length).to eq(92)
   end
 
   it 'shoud unpack url' do

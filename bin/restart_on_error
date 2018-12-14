@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+Dir.chdir __dir__.sub(%r{/bin$}, '')
+
+require 'dotenv'
+require 'logger'
+Dotenv.load
+
+server = ENV.fetch('RESIZER_SERVER')
+status = `curl --connect-timeout 5 --max-time 5 -sL -w "%{http_code}\\n" "#{server}" -o /dev/null`.chomp.to_i
+
+if status == 200
+  puts 'all ok'
+else
+  info   = "restarted via tmp/restart.txt for status #{status}"
+  logger = Logger.new('log/restart_on_error.log')
+  logger.error info
+
+  puts info
+
+  `touch tmp/restart.txt`
+end

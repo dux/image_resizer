@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+libs = 'libjpg libpng libtiff webp imagemagick pngquant'
+
+if `which brew`.to_s != ''
+  system 'brew upgrade %s' % libs
+
+elsif `which apt-get`.to_s != ''
+  system 'sudo apt-get install %s' % libs
+
+elsif `which apk`.to_s != ''
+  system 'sudo apk add libffi-dev %s' % libs
+
+else
+  puts 'pls install libs: %s' % libs
+
+end

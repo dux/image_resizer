@@ -1,26 +1,11 @@
 source 'https://rubygems.org'
 
-if @inferred_plugins
-  print 'Install system libs? (y/N): '
+puts "RUN bin/install to install system libs\n\n" if @inferred_plugins
 
-  if $stdin.gets.chomp.upcase == 'Y'
-    puts 'WEBP encoder https://github.com/le0pard/webp-ffi'
-
-    if `which apt-get`.to_s == ''
-      system "brew install libjpg libpng libtiff webp imagemagick pngquant jpegoptim"
-    else
-      system 'sudo apt-get install libjpeg-dev libpng-dev libtiff-dev libwebp-dev imagemagick pngquant jpegoptim'
-    end
-  end
-end
-
-# gem 'iodine'
 gem 'rack'
 gem 'json'
 gem 'dotenv'
 gem 'sinatra'
-gem 'webp-ffi'
-gem 'fast_blank'
 
 group :development do
   gem 'awesome_print'

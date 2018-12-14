@@ -1,0 +1,8 @@
+cache/
+tmp/
+log/
+.git/
+.DS_Store
+.gitignore
+.env
+Dockerfile
