@@ -10,6 +10,7 @@
       td.l { width:150px; text-align: right; padding-right: 20px; }
       li { margin-bottom:10px; }
       #error div { background-color: #faa; padding:4px; }
+      h2 { margin-top: 40px; }
     </style>
     <script>
       window.inform = function(what) {
@@ -52,39 +53,27 @@
 
   <h3>v<%= @version %>; server mode &mdash; <%= ENV.fetch('RACK_ENV') %></h3>
 
-  <h2>Usage</h2>
+  <h2>Client usage</h2>
   <pre>
-    # resize to 222x222, no crop, 80 quality
-    @image.resized({ s: "222x222", q: 80 }
+require "rack_image_resizer"
 
-    # resize crop to 200x200, default server quality (90)
-    @image.resized("^200x200")
+RackImageResizer.set :secret, "foobarbaz"
+RackImageResizer.set :server, "https://resizer.myapp.com"
 
-    # expcts size as param
-    @image.resized
+# RackImageResizer.build s: '^200x100'
 
-    # resize width to 400px, add watermark from ./public/watermark1.png, gravity SouthEast, 30% opacity
-    @image.resized(s: 400, w: "watermark1:SouthEast:30")
+@image.url.resized("200")      # resize image width to 200px
+@image.url.resized("x200")     # resize image height to 200px
+@image.url.resized("200x200")  # resize image to fix 200x200 box
+@image.url.resized("^200x200") # resize crop image width to 200x200
+@image.url.resized("^200")     # resize crop image width to 200x200
+@image.url.resized("u^100")    # resize crop image width to 100x100 and apply unsharp mask
+
+# or
+@image.url.resized + '?s=x200' # dinamicly assign resize attributes
   </pre>
 
-  <h2>Options</h2>
-
-  <ul>
-    <li><b>q</b>uality - 10..95</li>
-    <li><b>i</b>mage - source image</li>
-    <li>
-      <b>s</b>ize
-      <ul>
-        <li>"200" => 200x - resize width to 200px</li>
-        <li>"x200" => resize height to 200px</li>
-        <li>"200x200" => resize to max 200 width or max 200 height</li>
-        <li>"^200x200" or just "^200" => crop resize to 200x200, gravity North</li>
-        <li>"u^100" => crop resize to 100x100 and apply unsharp mask</li>
-      </ul>
-    </li>
-  </ul>
-
-  <h2 style="margin:50px 0 0 0;">Tester or try <a href="/test">bulk tester</a></h2>
+  <h2>Tester or try <a href="/test">bulk tester</a></h2>
 
   <table>
     <tr>
@@ -96,12 +85,12 @@
       <td><input id="image" style="width:300px;" value="http://i.imgur.com/krurDGE.jpg" /></td>
     </tr>
     <tr>
-      <td class="l">Size (Width x Height)</td>
+      <td class="l">Size</td>
       <td><input id="size" placeholder="200" /></td>
     </tr>
     <tr>
       <td class="l">Quality</td>
-      <td><input id="q" /></td>
+      <td><input id="q" placeholder="90" /></td>
     </tr>
     <tr>
       <td class="l">opts</td>
