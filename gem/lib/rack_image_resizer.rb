@@ -6,13 +6,18 @@ require_relative 'string'
 module ::RackImageResizer
   extend self
 
+  @@config = Struct.new(:secret, :server, :host).new
+
   def set name, value
-    raise 'not allowed' unless [:secret, :server, :host].include?(name)
-    instance_variable_set '@%s' % name, value
+    @@config.send '%s=' % name, value
   end
 
   def get name
-    instance_variable_get('@%s' % name) || ENV.fetch('RESIZER_%s' % name.to_s.upcase)
+    @@config.send(name) || ENV.fetch('RESIZER_%s' % name.to_s.upcase)
+  end
+
+  def config
+    yield @@config
   end
 
   def prefix_it url
