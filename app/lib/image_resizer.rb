@@ -1,7 +1,7 @@
 # main class that handles image resizing
 
 class ImageResizer
-  attr_reader :ext, :image, :original, :resized, :cache_path
+  attr_reader :ext, :image, :original, :resized, :cache_path, :quality, :size
 
   def initialize image:, size:, error: nil, quality: nil, watermark: nil, reload: false, as_webp: false
     ext = image.split('?').first.split('.').reverse[0].to_s.downcase

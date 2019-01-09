@@ -56,6 +56,8 @@ def render_image
   data = img.resize
 
   response.headers['x-source']            = @params[:image] unless ENV['X_SOURCE'] == 'false'
+  response.headers['x-size']              = img.size
+  response.headers['x-quality']           = img.quality
   response.headers['accept-ranges']       = 'bytes'
   response.headers['etag']                = @etag
 
