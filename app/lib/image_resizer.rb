@@ -14,7 +14,7 @@ class ImageResizer
     @original  = "#{App.root}/cache/o/#{sha1(@image)}.#{@ext}"
     @reload    = reload
     @as_webp   = as_webp
-    @size      = size.to_s
+    @size      = size.to_s.gsub(/['"]/, '')
     @error     = error
     @watermark = watermark
 
@@ -105,7 +105,7 @@ class ImageResizer
   def optimize
     case @ext
       when 'png'
-        run "pngquant -f --output #{@resized} --strip #{@resized}"
+        run "pngquant -f --output #{@resized} #{@resized}"
     end
   end
 
