@@ -44,6 +44,11 @@ get '/favicon.ico' do
   data
 end
 
+get '/ico/:domain' do
+  ico_url = find_ico params[:domain]
+  redirect to(ico_url), 301
+end
+
 # only in development
 if App.is_local?
   get '/test' do

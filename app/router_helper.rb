@@ -76,3 +76,42 @@ def render_image
 
   data
 end
+
+def find_ico domain
+  data    = []
+  threads = []
+
+  dir = './cache/ico'
+  FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
+  file_location = Pathname.new '%s/%s.txt' % [dir, domain]
+
+  return file_location.read if file_location.exist?
+
+  r = RestClient.get("http://www.#{domain}") rescue nil
+  ico = {}
+
+  # find default ico link
+  doc = Nokogiri::HTML(r.body)
+  doc.xpath('//link[@rel="shortcut icon"]').each do |tag|
+    ico['16'] = tag['href']
+  end
+
+  # find other ico links
+  doc.xpath('//link[@rel="icon"]').each do |tag|
+    size = tag['sizes'].to_s.split('x')[1] || '16'
+    ico[size] = tag['href']
+  end
+
+  # base proto + domain
+  base = r.request.url.split('/')
+  base = '%s//%s' % [base[0], base[2]]
+
+  # get default 32 ico
+  ico = ico['32'] || ico.values.first || "#{base}/favico.ico"
+  ico = ico.sub(/^\/\//, 'https://')
+  ico = base + ico unless ico.include?('://')
+
+  file_location.write ico
+
+  ico
+end

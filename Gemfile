@@ -7,6 +7,10 @@ gem 'json'
 gem 'dotenv'
 gem 'sinatra'
 
+# for site icon get
+gem 'rest-client'
+gem 'nokogiri'
+
 group :development do
   gem 'awesome_print'
   gem 'puma'
