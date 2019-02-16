@@ -81,13 +81,15 @@ def find_ico domain
   data    = []
   threads = []
 
+  domain = 'www.' + domain unless domain[0,4] == 'www.'
+
   dir = './cache/ico'
   FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
-  file_location = Pathname.new '%s/%s.txt' % [dir, domain]
+  file_location = Pathname.new '%s/%s' % [dir, domain]
 
-  return file_location.read if file_location.exist?
+  return file_location.to_s if file_location.exist?
 
-  r = RestClient.get("http://www.#{domain}") rescue nil
+  r = RestClient.get("http://#{domain}") rescue nil
   ico = {}
 
   # find default ico link
@@ -107,11 +109,11 @@ def find_ico domain
   base = '%s//%s' % [base[0], base[2]]
 
   # get default 32 ico
-  ico = ico['32'] || ico.values.first || "#{base}/favico.ico"
+  ico = ico['32'] || ico.values.first || "#{base}/favicon.ico"
   ico = ico.sub(/^\/\//, 'https://')
   ico = base + ico unless ico.include?('://')
 
-  file_location.write ico
+  `curl '#{ico}' -s -o '#{file_location}'`
 
-  ico
+  file_location.to_s
 end

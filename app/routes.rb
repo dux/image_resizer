@@ -45,8 +45,28 @@ get '/favicon.ico' do
 end
 
 get '/ico/:domain' do
-  ico_url = find_ico params[:domain]
-  redirect to(ico_url), 301
+  ico  = find_ico params[:domain]
+  data = File.read ico
+
+  response.headers['cache-control']  = 'public, max-age=10000000, no-transform'
+
+  if data.to_s.include?('</body>')
+    data = %[<?xml version="1.0" standalone="no"?>
+    <svg width="1px" height="1px" xmlns="http://www.w3.org/2000/svg">
+      <desc>ico for #{params[:domain]} not found</desc>
+    </svg>]
+
+    response.headers['content-type'] = "image/svg+xml"
+  else
+    opts = `identify #{ico}`.split(/\s+/)
+    ext  = opts[2].to_s.split('x')[1] || 'png'
+    data = File.read ico
+
+    response.headers['content-type'] = "image/#{ext.downcase}"
+  end
+
+  response.headers['content-length'] = data.bytesize
+  data
 end
 
 # only in development
