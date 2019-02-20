@@ -48,25 +48,24 @@ get '/ico/:domain' do
   ico  = find_ico params[:domain]
   data = File.read ico
 
-  response.headers['cache-control']  = 'public, max-age=10000000, no-transform'
-
+  content_type =
   if data.to_s.include?('</body>')
     data = %[<?xml version="1.0" standalone="no"?>
     <svg width="1px" height="1px" xmlns="http://www.w3.org/2000/svg">
       <desc>ico for #{params[:domain]} not found</desc>
     </svg>]
 
-    response.headers['content-type'] = "image/svg+xml"
+    "image/svg+xml"
   else
-    opts = `identify #{ico}`.split(/\s+/)
-    ext  = opts[2].to_s.split('x')[1] || 'png'
-    data = File.read ico
+    cli = `identify #{ico}`.split(/\s+/)
+    ext = cli[1] || 'png'
 
-    response.headers['content-type'] = "image/#{ext.downcase}"
+    'image/%s' % ext.downcase
   end
 
-  response.headers['content-length'] = data.bytesize
-  data
+  deliver_data data,
+    etag:         '"%s"' % Digest::SHA1.hexdigest(data),
+    content_type: content_type
 end
 
 # only in development

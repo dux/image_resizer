@@ -53,28 +53,14 @@ def render_image
     error:     @error,
     as_webp:   request.env['HTTP_ACCEPT'].to_s.include?('image/webp')
 
-  data = img.resize
-
-  response.headers['x-source']            = @params[:image] unless ENV['X_SOURCE'] == 'false'
-  response.headers['x-size']              = img.size
-  response.headers['x-quality']           = img.quality
-  response.headers['accept-ranges']       = 'bytes'
-  response.headers['etag']                = @etag
-
-  if img.error
-    response.headers['cache-control']     = 'public, max-age=600, no-transform'
-    App.error "#{img.error} for image #{@params[:image]}, from #{request.referrer}"
-    redirect @params[:e] if @params[:e]
-  end
-
-  response.headers['cache-control']       = 'public, max-age=10000000, no-transform'
-  response.headers['content-type']        = "image/#{img.content_type}"
-  response.headers['content-length']      = data.bytesize
-  response.headers['content-disposition'] = 'inline'
-
-  response.status = img.error ? 400 : 200
-
-  data
+  deliver_data img.resize,
+    source:       @params[:image],
+    etag:         @etag,
+    alt:          @params[:e],
+    size:         img.size,
+    quality:      img.quality,
+    error:        img.error,
+    content_type: img.content_type
 end
 
 def find_ico domain
@@ -116,4 +102,27 @@ def find_ico domain
   `curl '#{ico}' -s -o '#{file_location}'`
 
   file_location.to_s
+end
+
+def deliver_data data, opts={}
+  response.headers['x-source']            = opts[:source]  if opts[:source] && ENV['X_SOURCE'] != 'false'
+  response.headers['x-size']              = opts[:size]    if opts[:size]
+  response.headers['x-quality']           = opts[:quality] if opts[:quality]
+  response.headers['accept-ranges']       = 'bytes'
+  response.headers['etag']                = opts[:etag]
+
+  if opts[:error]
+    response.headers['cache-control']     = 'public, max-age=600, no-transform'
+    App.error "#{opts[:error]} for image #{opts[:source]}, from #{request.referrer}"
+    redirect opts[:alt] if opts[:alt]
+  end
+
+  response.headers['cache-control']       = 'public, max-age=10000000, no-transform'
+  response.headers['content-type']        = opts[:content_type].to_s.downcase
+  response.headers['content-length']      = data.bytesize
+  response.headers['content-disposition'] = 'inline'
+
+  response.status = opts[:error] ? 400 : 200
+
+  data
 end
