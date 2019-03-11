@@ -46,7 +46,7 @@ end
 
 get '/ico/:domain' do
   ico  = find_ico params[:domain]
-  data = File.read ico
+  data = File.read(ico)
 
   content_type =
   if data.to_s.include?('</body>')

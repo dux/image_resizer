@@ -97,11 +97,19 @@ def find_ico domain
   # get default 32 ico
   ico = ico['32'] || ico.values.first || "#{base}/favicon.ico"
   ico = ico.sub(/^\/\//, 'https://')
-  ico = base + ico unless ico.include?('://')
+
+  unless ico.include?('://')
+    ico = '/' + ico unless ico[0,1] == '/'
+    ico = base + ico
+  end
 
   `curl '#{ico}' -s -o '#{file_location}'`
 
-  file_location.to_s
+  if file_location.exist?
+    file_location.to_s
+  else
+    './public/transparent.png'
+  end
 end
 
 def deliver_data data, opts={}
