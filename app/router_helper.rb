@@ -71,10 +71,20 @@ def find_ico domain
 
   dir = './cache/ico'
   FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
-  file_location = Pathname.new '%s/%s' % [dir, domain]
+  file_location     = Pathname.new '%s/%s' % [dir, domain]
+  file_location_ico = Pathname.new '%s.ico' % file_location.to_s
 
   return file_location.to_s if file_location.exist?
+  return file_location_ico.to_s if file_location_ico.exist?
 
+  # find default ico if possible
+  ico_cache = "./cache/ico/#{domain}.ico"
+  `curl -L http://#{domain}/favicon.ico > #{ico_cache}`
+  test = `identify #{ico_cache}`.split(' ')
+  return file_location_ico.to_s if test[1] == 'ICO'
+  file_location_ico.delete
+
+  # favicon.ico not found, proceed and parse HTML
   r = RestClient.get("http://#{domain}") rescue nil
   ico = {}
 

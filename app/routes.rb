@@ -56,6 +56,8 @@ get '/ico/:domain' do
     </svg>]
 
     "image/svg+xml"
+  elsif ico =~ /\.ico$/
+    'image/vnd.microsoft.icon'
   else
     cli = `identify #{ico}`.split(/\s+/)
     ext = cli[1] || 'png'
