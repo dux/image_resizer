@@ -67,6 +67,9 @@ class ImageResizer
       end
     end
 
+    @info ||= `identify #{@original}`.split(' ')
+    @ext    = @info[1].downcase if @info[2].include?('x')
+
     @original
   end
 
@@ -138,8 +141,8 @@ class ImageResizer
 
     # if size not provided, only apply quality filter
     if @size.to_s == ''
-      info  = `identify #{@original}`.split(' ')
-      @size = info[2]
+      @info  ||= `identify #{@original}`.split(' ')
+      @size = @info[2]
     end
 
     @resized = [App.root, "r/s#{@size}/q#{@quality}-#{sha1(@image+@watermark.to_s)}.#{@ext}"].join('/cache/')

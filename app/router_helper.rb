@@ -27,18 +27,18 @@ end
 
 def render_image
   # fix params
-  @params[:quality]     = (@params[:quality] || @params[:q]).to_i
-  @params[:size]      ||= @params[:s]
-  @params[:image]     ||= @params[:i]
-  @params[:watermark] ||= @params[:w]
+  @params[:quality]     = (@params[:quality] || @params.delete(:q)).to_i
+  @params[:size]      ||= @params.delete(:s)
+  @params[:image]     ||= @params.delete(:i)
+  @params[:watermark] ||= @params.delete(:w)
 
   # define etag and return from cache if possible
   @etag = '"%s"' % Digest::SHA1.hexdigest([@params[:quality], @params[:size], @params[:image]].join('-'))
 
-  if request.env['HTTP_IF_NONE_MATCH'] == @etag
-    response.status = 304
-    return
-  end
+  # if request.env['HTTP_IF_NONE_MATCH'] == @etag
+  #   response.status = 304
+  #   return
+  # end
 
   # check for image existance
   return "[image] not defined (can't read query string in production)" unless @params[:image].to_s.length > 5
@@ -123,22 +123,25 @@ def find_ico domain
 end
 
 def deliver_data data, opts={}
-  response.headers['x-source']            = opts[:source]  if opts[:source] && ENV['X_SOURCE'] != 'false'
-  response.headers['x-size']              = opts[:size]    if opts[:size]
-  response.headers['x-quality']           = opts[:quality] if opts[:quality]
-  response.headers['accept-ranges']       = 'bytes'
-  response.headers['etag']                = opts[:etag]
+  response.headers['X-Source']            = opts[:source]  if opts[:source] && ENV['X_SOURCE'] != 'false'
+  response.headers['X-Size']              = opts[:size]    if opts[:size]
+  response.headers['X-Quality']           = opts[:quality] if opts[:quality]
+  response.headers['Accept-Ranges']       = 'bytes'
+  response.headers['Etag']                = opts[:etag]
 
   if opts[:error]
-    response.headers['cache-control']     = 'public, max-age=600, no-transform'
+    response.headers['Cache-Control']     = 'public, max-age=600, no-transform'
     App.error "#{opts[:error]} for image #{opts[:source]}, from #{request.referrer}"
     redirect opts[:alt] if opts[:alt]
   end
 
-  response.headers['cache-control']       = 'public, max-age=10000000, no-transform'
-  response.headers['content-type']        = opts[:content_type].to_s.downcase
-  response.headers['content-length']      = data.bytesize
-  response.headers['content-disposition'] = 'inline'
+  content_type = opts[:content_type].to_s.downcase
+  content_type = 'image/%s' % content_type unless content_type.include?('/')
+
+  response.headers['Cache-Control']       = 'public, max-age=10000000, no-transform'
+  response.headers['Content-Type']        = content_type
+  response.headers['Content-Length']      = data.bytesize
+  response.headers['Content-Disposition'] = 'inline'
 
   response.status = opts[:error] ? 400 : 200
 
