@@ -62,6 +62,14 @@ RACK_ENV=production
 RESIZER_CACHE_CLEAR=2d  # clear unacceded images every 2 days
 ```
 
+install command line apps
+
+```
+sudo apt install imagemagick
+sudo apt install pngquant
+sudo apt-get install jpegoptim
+```
+
 Run via puma or passanger, it is a rack app.
 
 ## In development

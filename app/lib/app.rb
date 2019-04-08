@@ -29,10 +29,6 @@ module App
     end
   end
 
-  def dev_log data
-    puts data.blue if App.is_local?
-  end
-
   def is_local?
     ENV.fetch('RACK_ENV') == 'development'
   end

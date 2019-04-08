@@ -38,7 +38,7 @@ class ImageResizer
   end
 
   def run what
-    App.dev_log what
+    App.log 'RUN: %s' % what
     system "#{what} 2>&1"
   end
 
