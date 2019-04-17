@@ -67,8 +67,7 @@ class ImageResizer
       end
     end
 
-    @info ||= `identify #{@original}`.split(' ')
-    @ext    = @info[1].downcase if @info[2].include?('x')
+    @ext    = info[1].downcase if info[2].include?('x')
 
     @original
   end
@@ -141,14 +140,23 @@ class ImageResizer
 
     # if size not provided, only apply quality filter
     if @size.to_s == ''
-      @info  ||= `identify #{@original}`.split(' ')
-      @size = @info[2]
+      @size = info[2]
+    else
+      size = @size.split('x')
+      size[1] ||= 0
+      size = size
+        .push(info[2].split('x'))
+        .flatten
+        .map(&:to_i)
+
+      # do not apply resize if new width or height is less then original
+      @size = info[2] if size[0] > size[2] || size[1] > size[3]
     end
 
     @resized = [App.root, "r/s#{@size}/q#{@quality}-#{sha1(@image+@watermark.to_s)}.#{@ext}"].join('/cache/')
     target_dir = @resized.sub(%r{/[^/]+$}, '')
 
-    File.unlink(@resized) if @reload && File.exist?(@resized)
+    File.unlink(@resized)         if @reload && File.exist?(@resized)
     FileUtils.mkdir_p(target_dir) unless Dir.exist?(target_dir)
 
     unless File.exists? @resized
@@ -177,5 +185,9 @@ class ImageResizer
     @error = e.message
     @error = 'Resize error' if @error.include?('No such file')
     svg_error
+  end
+
+  def info
+    @info ||= `identify #{@original}`.split(' ')
   end
 end

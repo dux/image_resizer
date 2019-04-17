@@ -65,9 +65,7 @@ RESIZER_CACHE_CLEAR=2d  # clear unacceded images every 2 days
 install command line apps
 
 ```
-sudo apt install imagemagick
-sudo apt install pngquant
-sudo apt-get install jpegoptim
+sudo apt install -y imagemagick pngquant jpegoptim webp
 ```
 
 Run via puma or passanger, it is a rack app.
