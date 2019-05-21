@@ -64,7 +64,7 @@ module App
     if count > 0
       Thread.new { system "#{base} -delete" }
 
-      log 'CLEARED %d file/s from cache dirs, older than %s days' % [count, interval]
+      log 'CLEARED %d file/s from cache dirs, older than %s days' % [count, CLEAR_INTERVAL]
     end
   end
 end

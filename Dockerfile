@@ -28,6 +28,8 @@ RUN eval "$(rbenv init -)"; rbenv install $RBENV_VERSION \
 &&  eval "$(rbenv init -)"; gem install bundler -f \
 &&  rm -rf /tmp/*
 
+# FROM ruby:2.6.3
+
 RUN apt-get update -qq && apt-get install -y build-essential
 
 ENV APP_HOME /app

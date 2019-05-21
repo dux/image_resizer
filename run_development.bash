@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-rerun --no-notify --pattern="*.rb" "puma -p 4000 -t 0:32"
+find ./app | entr -r puma -p 4000 -t 0:16

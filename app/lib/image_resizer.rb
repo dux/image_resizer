@@ -17,12 +17,15 @@ class ImageResizer
     @size      = size.to_s.gsub(/['"]/, '')
     @error     = error
     @watermark = watermark
+    @size      = nil if @size == ''
 
     # check max width and height
     max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 1600 }).to_i
 
-    for el in @size.split('x').map { |it| it.gsub(/[^\d]/, '').to_i }
-      raise ArgumentError.new('Image to large, max 1600') if el && el > max_size
+    if @size
+      for el in @size.split('x').map { |it| it.gsub(/[^\d]/, '').to_i }
+        raise ArgumentError.new('Image to large, max 1600') if el && el > max_size
+      end
     end
 
     # gif has errors and png has no
@@ -58,7 +61,7 @@ class ImageResizer
 
   def download
     unless File.exists?(@original)
-      run "curl '#{@image}' --create-dirs -s -o '#{@original}'"
+      run "curl -L '#{@image}' --create-dirs -s -o '#{@original}'"
 
       if File.exists?(@original)
         App.log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@original).size/1024]
@@ -67,13 +70,13 @@ class ImageResizer
       end
     end
 
-    @ext    = info[1].downcase if info[2].include?('x')
+    @ext = info[1].downcase if info[2].to_s.include?('x')
 
     @original
   end
 
   def convert_base
-    size    = @size
+    size = @size
 
     do_unsharp =
       if size.include?('u')
@@ -134,14 +137,13 @@ class ImageResizer
 
   def resize
     raise @error if @error
+
     download
 
     return File.read(@original) if @ext == 'svg'
 
-    # if size not provided, only apply quality filter
-    if @size.to_s == ''
-      @size = info[2]
-    else
+    if @size
+      # do not apply resize if new width or height is less then original
       size = @size.split('x')
       size[1] ||= 0
       size = size
@@ -149,8 +151,10 @@ class ImageResizer
         .flatten
         .map(&:to_i)
 
-      # do not apply resize if new width or height is less then original
       @size = info[2] if size[0] > size[2] || size[1] > size[3]
+    else
+      # if size not provided, only apply quality filter
+      @size = info[2]
     end
 
     @resized = [App.root, "r/s#{@size}/q#{@quality}-#{sha1(@image+@watermark.to_s)}.#{@ext}"].join('/cache/')
