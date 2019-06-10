@@ -143,6 +143,8 @@ class ImageResizer
     return File.read(@original) if @ext == 'svg'
 
     if @size
+      raise 'Source not found' unless info[2]
+
       # do not apply resize if new width or height is less then original
       size = @size.split('x')
       size[1] ||= 0
@@ -150,6 +152,7 @@ class ImageResizer
         .push(info[2].split('x'))
         .flatten
         .map(&:to_i)
+
 
       @size = info[2] if size[0] > size[2] || size[1] > size[3]
     else
