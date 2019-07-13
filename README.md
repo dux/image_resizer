@@ -65,20 +65,36 @@ RESIZER_CACHE_CLEAR=2d  # clear unacceded images every 2 days
 install command line apps
 
 ```
-sudo apt install -y imagemagick pngquant jpegoptim webp
+rake install
+# sudo apt install -y imagemagick pngquant jpegoptim webp
 ```
 
 Run via puma or passanger, it is a rack app.
 
-## In development
+## All the tasks
 
-`bash ./run_development`
+`rake`
+
+```
+rake cc          # Clear cache
+rake console     # Get console
+rake dev         # Run development server
+rake install     # Install dependecies
+rake production  # Run production server
+rake rspec       # Rspec test
+rake test        # Install dependecies
+```
+
+## Run in development
+
+`rake dev`
 
 or
 
 `puma -p 4000`
 
-In root you will find image resize tester.
+
+## URL doc
 
 /r
 

@@ -1,5 +1,7 @@
 # main app routes
 
+get('/healthcheck') { 'ok' }
+
 get '/' do
   @version = File.read('.version')
 
@@ -71,7 +73,7 @@ get '/ico/:domain' do
 end
 
 # only in development
-if App.is_local?
+if App.dev?
   get '/test' do
     @movies_json = File.read './public/movies.js'
 

@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-cd "$(dirname "$0")"
-
-find ../cache -depth -type f -atime 2 -delete

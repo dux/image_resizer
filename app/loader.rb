@@ -4,7 +4,7 @@ require_relative 'libs'
 require_relative 'routes'
 require_relative 'router_helper'
 
-puts '* Clearing staled cache older then %s days' % App::CLEAR_INTERVAL
+puts '* Clearing staled cache older then %s days' % App.config.clear_interval
 
 # exit unless imagemagic convert is found
 App.die('ImageMagic convert not found in path') if `which convert` == ''

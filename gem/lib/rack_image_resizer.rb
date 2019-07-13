@@ -17,7 +17,11 @@ module ::RackImageResizer
   end
 
   def config
-    yield @@config
+    if block_given?
+      yield @@config
+    else
+      @@config
+    end
   end
 
   def prefix_it url

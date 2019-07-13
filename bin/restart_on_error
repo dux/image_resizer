@@ -2,16 +2,17 @@
 
 Dir.chdir __dir__.sub(%r{/bin$}, '')
 
-puts "install as crontab, chech every 1 min:"
+puts "install as crontab, check every 1 minutes (sudo crontab -e):"
 puts "*/1 * * * * #{`which ruby`.chomp} #{Dir.pwd}/bin/restart_on_error"
 puts
+
+#
 
 require 'dotenv'
 require 'logger'
 Dotenv.load
 
-server = ENV.fetch('RESIZER_SERVER')
-status = `curl --connect-timeout 5 --max-time 5 -sL -w "%{http_code}\\n" "#{server}" -o /dev/null`.chomp.to_i
+#
 
 logger = Logger.new('log/restart_on_error.log', 'weekly')
 logger.formatter = proc do |severity, datetime, progname, msg|
@@ -20,15 +21,21 @@ logger.formatter = proc do |severity, datetime, progname, msg|
   "[#{time}] #{msg}\n"
 end
 
-if status == 200
+#
+
+server = ENV.fetch('RESIZER_SERVER')
+status = `curl -s --max-time 5 "#{server}/healthcheck" `.chomp
+
+
+if status == 'okx'
   info   = 'ok'
   logger.info info
-
 else
-  info   = "restarted via tmp/restart.txt for status #{status}"
-  logger.error info
+  command = ENV.fetch('RESTART_CLI') { 'service nginx restart' }
+  info    = "restarted via: %s" % command
 
-  `touch tmp/restart.txt`
+  logger.error info
+  system command
 end
 
 puts info

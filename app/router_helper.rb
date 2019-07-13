@@ -15,22 +15,30 @@ def unpack_url url_part
   data[:s] ||= params[:s] || params[:size]
 
   # if check fails
-  unless Digest::SHA1.hexdigest(App::SECRET+base)[0,2] == check
-    @error = App.error 'Image prefix hash check failed'
+  unless Digest::SHA1.hexdigest(App.config.secret+base)[0,2] == check
+    @error = 'Image prefix hash check failed'
   end
 
   data
 
 rescue => e
-  @error = App.error e.message
+  @error = e.message
 end
 
 def render_image
+  rsise @error if @error
+
   # fix params
   @params[:quality]     = (@params[:quality] || @params.delete(:q)).to_i
   @params[:size]      ||= @params.delete(:s)
   @params[:image]     ||= @params.delete(:i)
   @params[:watermark] ||= @params.delete(:w)
+
+  if @params[:image].start_with?(App.config.url)
+    raise 'Cant referece image on %s' % App.config.url
+    # opts = unpack_url @params[:image].split('?').first.split('/')[4]
+    # @params[:image]
+  end
 
   # define etag and return from cache if possible
   @etag = '"%s"' % Digest::SHA1.hexdigest([@params[:quality], @params[:size], @params[:image]].join('-'))
@@ -50,7 +58,6 @@ def render_image
     quality:   @params[:quality],
     reload:  !!@params[:reload],
     watermark: @params[:watermark],
-    error:     @error,
     as_webp:   request.env['HTTP_ACCEPT'].to_s.include?('image/webp')
 
   deliver_data img.resize,
@@ -59,8 +66,19 @@ def render_image
     alt:          @params[:e],
     size:         img.size,
     quality:      img.quality,
-    error:        img.error,
     content_type: img.content_type
+
+rescue => error
+  App.log_error error
+
+  image = %{<?xml version="1.0" standalone="no"?>
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+      <rect x="0" y="0" width="100%" height="100%" style="fill:#fee; stroke:#fcc; stroke-width:7px;" />
+      <text x="50%" y="50%" fill="#800" text-anchor="middle" alignment-baseline="central">#{$!.message}</text>
+    </svg>
+  }
+
+  deliver_data image, content_type: 'image/svg+xml', etag: @etag
 end
 
 def find_ico domain
@@ -131,7 +149,7 @@ def deliver_data data, opts={}
 
   if opts[:error]
     response.headers['Cache-Control']     = 'public, max-age=600, no-transform'
-    App.error "#{opts[:error]} for image #{opts[:source]}, from #{request.referrer}"
+    App.log_error "#{opts[:error]} for image #{opts[:source]}, from #{request.referrer}"
     redirect opts[:alt] if opts[:alt]
   end
 
