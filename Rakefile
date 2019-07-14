@@ -78,3 +78,11 @@ desc 'Rspec test'
 task :rspec do
   run 'rspec'
 end
+
+desc 'Update resizer & restart server'
+task :update do
+  run 'git stash'
+  run 'git pull'
+  run 'bundle install'
+  run 'sudo service nginx restart'
+end

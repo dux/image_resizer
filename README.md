@@ -48,8 +48,8 @@ Following code will apply watermark to lower right corner of the image, width 40
 Clone and bundle
 
 ```
-git clone https://github.com/dux/rack_image_resizer.git
-cd rack_image_resizer
+git clone https://github.com/dux/image_resizer.git
+cd image_resizer
 bundle install
 rspec
 ```
