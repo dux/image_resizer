@@ -26,7 +26,7 @@ rescue => e
 end
 
 def render_image
-  rsise @error if @error
+  raise @error if @error
 
   # fix params
   @params[:quality]     = (@params[:quality] || @params.delete(:q)).to_i
