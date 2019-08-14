@@ -72,9 +72,10 @@ rescue => error
   App.log_error error
 
   image = %{<?xml version="1.0" standalone="no"?>
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
-      <rect x="0" y="0" width="100%" height="100%" style="fill:#fee; stroke:#fcc; stroke-width:7px;" />
-      <text x="50%" y="50%" fill="#800" text-anchor="middle" alignment-baseline="central">#{$!.message}</text>
+    <svg width="100%" height="100%">
+      <rect width="100%" heigh="100" style="fill:rgb(255,255,255);stroke-width:1;stroke:rgb(150, 150, 150);"></rect>
+      <text x="10" y="25" fill="#aaa" font-size="12">Imgage resize server</text>
+      <text x="10" y="50" fill="#aaa" font-size="16">#{$!.message}</text>
     </svg>
   }
 
