@@ -15,6 +15,7 @@ def rescued
         }
       else
         retrun redirect(@params[:error_url])
+      end
     end
 
     @image ||= %{<?xml version="1.0" standalone="no"?>
