@@ -66,6 +66,8 @@ class ImageResizer
 
     @ext = info[1].downcase if info[2].to_s.include?('x')
 
+    raise 'Source error' if info[2] == '0x0'
+
     @original
   end
 

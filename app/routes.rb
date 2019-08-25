@@ -1,4 +1,9 @@
-# main app routes
+before do
+  # define etag and return from cache if possible
+  @etag = '"%s"' % Digest::SHA1.hexdigest(request.url)
+end
+
+###
 
 get('/healthcheck') { 'ok' }
 
@@ -19,15 +24,17 @@ get '/pack' do
 end
 
 get '/r/*' do
-  App.clear_cache
+  rescued do
+    App.clear_cache
 
-  @params = unpack_url params[:splat].first
+    @params = unpack_url params[:splat].first
 
-  render_image
+    render_image
+  end
 end
 
 get '/log' do
-  return 'secret not defined' unless params[:secret] == ENV.fetch('RESIZER_SECRET')
+  raise 'secret not defined' unless params[:secret] == ENV.fetch('RESIZER_SECRET')
 
   lines = `tail -n 2000 ./log/production.log`.split($/).reverse.join("\n")
 

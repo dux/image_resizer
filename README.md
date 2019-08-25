@@ -102,7 +102,7 @@ or
 * [s]ize      = width x height
 * [q]uality   = quality (10 - 100)
 * [w]atermark = image:gravity:opacity-percent
-* on[e]error  = image to show in case of error
+* on[e]error  = image to show in case of error ("blank" to hide errors)
 
 /pack?image=http://.../foo.jpg&size=200
 

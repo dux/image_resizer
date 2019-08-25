@@ -15,12 +15,12 @@ end
 
 desc 'Run development server'
 task :dev do
-  run 'find ./app | entr -r puma -p 4000 -t 0:16'
+  run 'find ./app | entr -r bundle exec puma -p 4000 -t 0:16'
 end
 
 desc 'Run production server'
 task :production do
-  run 'puma -e production -w 2 -t 0:32'
+  run 'bundle exec puma -e production -w 2 -t 0:32'
 end
 
 desc 'Clear cache'

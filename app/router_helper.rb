@@ -1,3 +1,34 @@
+def rescued
+  begin
+    yield
+  rescue => error
+    App.log_error error
+
+    response.headers['X-ErrorMessage'] = error.message
+    response.headers['Cache-Control']  = 'public, max-age=600, no-transform'
+
+    if url = @params[:error_url]
+      if url == 'blank'
+        @image = %{<?xml version="1.0" standalone="no"?>
+            <svg width="100%" height="100%" xmlns='http://www.w3.org/2000/svg'>
+          </svg>
+        }
+      else
+        retrun redirect(@params[:error_url])
+    end
+
+    @image ||= %{<?xml version="1.0" standalone="no"?>
+      <svg width="100%" height="100%" xmlns='http://www.w3.org/2000/svg'>
+        <rect width="100%" heigh="100" style="fill:rgb(255,255,255);stroke-width:0.1;stroke:rgb(220, 220, 220);"></rect>
+        <text x="10" y="25" fill="#aaa" font-size="11" font-family="helvetica">Resize server</text>
+        <text x="10" y="50" fill="#aaa" font-size="15" font-family="helvetica">#{error.message}</text>
+      </svg>
+    }
+
+    deliver_data @image, content_type: 'image/svg+xml', etag: @etag
+  end
+end
+
 def unpack_url url_part
   url_part    = url_part.sub(/\.\w+$/, '')
   base, check = url_part.slice!(0...-2), url_part
@@ -16,32 +47,25 @@ def unpack_url url_part
 
   # if check fails
   unless Digest::SHA1.hexdigest(App.config.secret+base)[0,2] == check
-    @error = 'Image prefix hash check failed'
+    raise 'Image prefix hash check failed'
   end
 
   data
-
-rescue => e
-  @error = e.message
 end
 
 def render_image
-  raise @error if @error
-
   # fix params
   @params[:quality]     = (@params[:quality] || @params.delete(:q)).to_i
   @params[:size]      ||= @params.delete(:s)
   @params[:image]     ||= @params.delete(:i)
   @params[:watermark] ||= @params.delete(:w)
+  @params[:error_url] ||= @params.delete(:e)
 
   if @params[:image].start_with?(App.config.url)
     raise 'Cant referece image on %s' % App.config.url
     # opts = unpack_url @params[:image].split('?').first.split('/')[4]
     # @params[:image]
   end
-
-  # define etag and return from cache if possible
-  @etag = '"%s"' % Digest::SHA1.hexdigest([@params[:quality], @params[:size], @params[:image]].join('-'))
 
   # if request.env['HTTP_IF_NONE_MATCH'] == @etag
   #   response.status = 304
@@ -63,23 +87,9 @@ def render_image
   deliver_data img.resize,
     source:       @params[:image],
     etag:         @etag,
-    alt:          @params[:e],
     size:         img.size,
     quality:      img.quality,
     content_type: img.content_type
-
-rescue => error
-  App.log_error error
-
-  image = %{<?xml version="1.0" standalone="no"?>
-    <svg width="100%" height="100%">
-      <rect width="100%" heigh="100" style="fill:rgb(255,255,255);stroke-width:1;stroke:rgb(150, 150, 150);"></rect>
-      <text x="10" y="25" fill="#aaa" font-size="12">Imgage resize server</text>
-      <text x="10" y="50" fill="#aaa" font-size="16">#{$!.message}</text>
-    </svg>
-  }
-
-  deliver_data image, content_type: 'image/svg+xml', etag: @etag
 end
 
 def find_ico domain
@@ -148,12 +158,6 @@ def deliver_data data, opts={}
   response.headers['Accept-Ranges']       = 'bytes'
   response.headers['Etag']                = opts[:etag]
 
-  if opts[:error]
-    response.headers['Cache-Control']     = 'public, max-age=600, no-transform'
-    App.log_error "#{opts[:error]} for image #{opts[:source]}, from #{request.referrer}"
-    redirect opts[:alt] if opts[:alt]
-  end
-
   content_type = opts[:content_type].to_s.downcase
   content_type = 'image/%s' % content_type unless content_type.include?('/')
 
@@ -162,7 +166,7 @@ def deliver_data data, opts={}
   response.headers['Content-Length']      = data.bytesize
   response.headers['Content-Disposition'] = 'inline'
 
-  response.status = opts[:error] ? 400 : 200
+  response.status = 200
 
   data
 end
