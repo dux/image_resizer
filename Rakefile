@@ -102,7 +102,6 @@ desc 'Generate nginx conf file'
 task :nginx do
   server = ENV.fetch('RESIZER_SERVER').split('/').last
 
-
   conf   = File.read('config/nginx.conf')
   conf   = conf.gsub('$app_name', server)
   conf   = conf.gsub('$root', `pwd`.chomp)
