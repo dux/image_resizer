@@ -1,6 +1,7 @@
 # encodes resized image URLs
 
 require 'base64'
+require 'digest'
 require_relative 'string'
 
 module ::RackImageResizer

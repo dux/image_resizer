@@ -2,8 +2,6 @@ require 'spec_helper'
 require './app/router_helper'
 
 describe 'image resizer' do
-
-
   let(:params) {
     {
       image: 'http://i.imgur.com/krurDGE.jpg',
@@ -33,8 +31,12 @@ describe 'image resizer' do
 
   ###
 
+  it 'ENV[RESIZER_SERVER] should start with http' do
+    expect(ENV.fetch('RESIZER_SERVER') =~ /^https?:\/\//).to eq 0
+  end
+
   it 'shoud generate pack url' do
-    expect(url.split('/')[4].length).to eq(68)
+    expect(url.split('/').last.length).to eq(68)
   end
 
   it 'shoud unpack url' do

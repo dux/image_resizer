@@ -30,6 +30,11 @@ end
 
 desc 'Get console'
 task :console do
+  require './gem/lib/rack_image_resizer'
+  require './gem/lib/string'
+
+  Dotenv.load
+
   begin
     require 'pry'
     AwesomePrint.pry!
@@ -43,7 +48,10 @@ end
 
 desc 'Install dependecies'
 task :install do
-libs = 'libjpg libpng libtiff webp imagemagick pngquant'
+  `mkdir -p ./log`
+
+  libs = 'webp imagemagick pngquant jpegoptim'
+
   if `which brew`.to_s != ''
     system 'brew upgrade %s' % libs
     run 'brew install entr'
