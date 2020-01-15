@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-puts "RUN bin/install to install system libs\n\n" if @inferred_plugins
+puts "rake install - to install system libs\n\n" if @inferred_plugins
 
 gem 'rack'
 gem 'json'
