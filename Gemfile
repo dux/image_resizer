@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 puts "rake install - to install system libs\n\n" if @inferred_plugins
 
+gem 'rake'
 gem 'rack'
 gem 'json'
 gem 'dotenv'

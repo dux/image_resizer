@@ -1,49 +1,25 @@
-# FROM drecom/ubuntu-base:latest
-#
-# MAINTAINER Drecom Technical Development Department <pr_itn@drecom.co.jp>
-#
-# RUN git clone git://github.com/rbenv/rbenv.git /usr/local/rbenv \
-# &&  git clone git://github.com/rbenv/ruby-build.git /usr/local/rbenv/plugins/ruby-build \
-# &&  git clone git://github.com/jf/rbenv-gemset.git /usr/local/rbenv/plugins/rbenv-gemset \
-# &&  /usr/local/rbenv/plugins/ruby-build/install.sh
-# ENV PATH /usr/local/rbenv/bin:$PATH
-# ENV RBENV_ROOT /usr/local/rbenv
-#
-# RUN echo 'export RBENV_ROOT=/usr/local/rbenv' >> /etc/profile.d/rbenv.sh \
-# &&  echo 'export PATH=/usr/local/rbenv/bin:$PATH' >> /etc/profile.d/rbenv.sh \
-# &&  echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh
-#
-# RUN echo 'export RBENV_ROOT=/usr/local/rbenv' >> /root/.bashrc \
-# &&  echo 'export PATH=/usr/local/rbenv/bin:$PATH' >> /root/.bashrc \
-# &&  echo 'eval "$(rbenv init -)"' >> /root/.bashrc
-#
-# ENV CONFIGURE_OPTS --disable-install-doc
-# ENV PATH /usr/local/rbenv/bin:/usr/local/rbenv/shims:$PATH
-#
-# ENV RBENV_VERSION 2.5.3
-#
-# RUN eval "$(rbenv init -)"; rbenv install $RBENV_VERSION \
-# &&  eval "$(rbenv init -)"; rbenv global $RBENV_VERSION \
-# &&  eval "$(rbenv init -)"; gem update --system \
-# &&  eval "$(rbenv init -)"; gem install bundler -f \
-# &&  rm -rf /tmp/*
+FROM ruby:2.7.0
 
-FROM ruby:2.6.3
+RUN apt-get update -y && apt-get purge -y --auto-remove
 
-RUN apt-get update -qq && apt-get install -y build-essential
-
+ENV BUNDLER_VERSION 2.0.2
 ENV APP_HOME /app
-ENV RESIZER_SECRET=tajna
+ENV RESIZER_SECRET=secret
+ENV RESIZER_SERVER=http://localhost:4000
 ENV RACK_ENV=development
 
+RUN gem install bundler --version "$BUNDLER_VERSION"
+
 RUN mkdir $APP_HOME
+RUN mkdir $APP_HOME/log
 
 WORKDIR $APP_HOME
 COPY . $APP_HOME
 
-RUN apt-get install webp imagemagick pngquant jpegoptim
 RUN bundle install --jobs 3 --retry 3
+RUN rake install
+# RUN rspec
 
 EXPOSE 4000
 
-CMD ["./run_development"]
+CMD ["bundle exec puma"]

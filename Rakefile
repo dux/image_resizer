@@ -54,16 +54,17 @@ task :install do
   `mkdir -p ./log`
 
   libs = 'webp imagemagick pngquant jpegoptim'
+  sudo = `whoami`.chomp == 'root' ? '' : 'sudo'
 
   if `which brew`.to_s != ''
     system 'brew upgrade %s' % libs
     run 'brew install entr'
 
   elsif `which apt-get`.to_s != ''
-    system 'sudo apt-get install %s' % libs
+    system "#{sudo} apt-get install -y %s" % libs
 
   elsif `which apk`.to_s != ''
-    system 'sudo apk add libffi-dev %s' % libs
+    system "#{sudo} apk add -y libffi-dev %s" % libs
 
   else
     puts 'pls install libs: %s' % libs
@@ -102,9 +103,9 @@ desc 'Generate nginx conf file'
 task :nginx do
   server = ENV.fetch('RESIZER_SERVER').split('/').last
 
-  conf   = File.read('config/nginx.conf')
-  conf   = conf.gsub('$app_name', server)
-  conf   = conf.gsub('$root', `pwd`.chomp)
+  conf = File.read('config/nginx.conf')
+  conf = conf.gsub('$domain', server)
+  conf = conf.gsub('$root', `pwd`.chomp)
 
   puts conf
 end
