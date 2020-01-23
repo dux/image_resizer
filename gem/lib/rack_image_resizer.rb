@@ -32,8 +32,9 @@ module ::RackImageResizer
   ###
 
   def build opts
+    opts[:p] ||= opts.delete(:proxy)
     opts[:i] ||= opts.delete(:image)
-    opts[:s] ||= opts.delete(:size) if opts[:size]
+    opts[:s] ||= opts.delete(:size) || opts.delete(:w) || opts.delete(:width)
     opts[:e] ||= opts.delete(:onerror) if opts[:onerror]
 
     # return empty pixel unless self

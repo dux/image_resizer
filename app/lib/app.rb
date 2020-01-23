@@ -8,7 +8,7 @@ module App
   CONFIG.icon           = File.read('./public/favicon.ico')
   CONFIG.root           = File.expand_path('../..', File.dirname(__FILE__))
   CONFIG.secret         = ENV.fetch('RESIZER_SECRET')
-  CONFIG.quality        = ENV.fetch('QUALITY') { 90 }
+  CONFIG.quality        = ENV.fetch('QUALITY') { 95 }
   CONFIG.clear_interval = ENV.fetch('RESIZER_CACHE_CLEAR') { 2 }
   CONFIG.url            = ENV.fetch('RESIZER_SERVER')
   CONFIG.env            = ENV.fetch('RACK_ENV')
@@ -72,6 +72,20 @@ module App
       Thread.new { system "#{base} -delete" }
 
       log 'CLEARED %d file/s from cache dirs, older than %s days' % [count, config.clear_interval]
+    end
+  end
+
+  def filesize size
+    size = size.to_f
+
+    {
+      'B'  => 1024,
+      'KB' => 1024 * 1024,
+      'MB' => 1024 * 1024 * 1024,
+      'GB' => 1024 * 1024 * 1024 * 1024,
+      'TB' => 1024 * 1024 * 1024 * 1024 * 1024
+    }.each_pair do |e, s|
+      return "#{(size / (s / 1024)).round(['B'].include?(e) ? 0 : 2)} #{e}" if size < s
     end
   end
 end

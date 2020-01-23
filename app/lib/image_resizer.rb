@@ -19,7 +19,7 @@ class ImageResizer
     @size      = nil if @size == ''
 
     # check max width and height
-    max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 1600 }).to_i
+    max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 2000 }).to_i
 
     if @size
       for el in @size.split('x').map { |it| it.gsub(/[^\d]/, '').to_i }

@@ -57,7 +57,7 @@ end
 def render_image
   # fix params
   @params[:quality]     = (@params[:quality] || @params.delete(:q)).to_i
-  @params[:size]      ||= @params.delete(:s)
+  @params[:size]      ||= @params.delete(:s) || @params.delete(:w) || @params.delete(:width)
   @params[:image]     ||= @params.delete(:i)
   @params[:watermark] ||= @params.delete(:w)
   @params[:error_url] ||= @params.delete(:e)
@@ -155,7 +155,9 @@ end
 def deliver_data data, opts={}
   response.headers['X-Source']            = opts[:source]  if opts[:source] && ENV['X_SOURCE'] != 'false'
   response.headers['X-Size']              = opts[:size]    if opts[:size]
+  response.headers['X-HumanSize']         = App.filesize data.bytesize
   response.headers['X-Quality']           = opts[:quality] if opts[:quality]
+
   response.headers['Accept-Ranges']       = 'bytes'
   response.headers['Etag']                = opts[:etag]
 

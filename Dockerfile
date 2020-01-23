@@ -19,7 +19,3 @@ COPY . $APP_HOME
 RUN bundle install --jobs 3 --retry 3
 RUN rake install
 # RUN rspec
-
-EXPOSE 4000
-
-CMD ["bundle exec puma"]
