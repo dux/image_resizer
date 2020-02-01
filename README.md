@@ -42,6 +42,11 @@ Following code will apply watermark to lower right corner of the image, width 40
 @image.url.resized(s: 400, w: "watermark1:SouthEast:30")
 ```
 
+## To force refresh image
+
+You need to append `reload` parameter with first 5 chars of RESIZER_SECRET.
+
+`'?reload=%s' % ENV.fetch('RESIZER_SECRET')[0,5]`
 
 ## To install on a server
 

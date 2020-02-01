@@ -62,26 +62,36 @@ def render_image
   @params[:watermark] ||= @params.delete(:w)
   @params[:error_url] ||= @params.delete(:e)
 
-  if @params[:image].start_with?(App.config.url)
-    raise 'Cant referece image on %s' % App.config.url
-    # opts = unpack_url @params[:image].split('?').first.split('/')[4]
-    # @params[:image]
+  # check for image existance
+  unless @params[:image].to_s.length > 5
+    return "[image] not defined (can't read query string in production)"
   end
 
-  # if request.env['HTTP_IF_NONE_MATCH'] == @etag
-  #   response.status = 304
-  #   return
-  # end
+  # return if image is from local server
+  if @params[:image].start_with?(App.config.url)
+    raise 'Cant referece image on self (%s)' % App.config.url
+  end
 
-  # check for image existance
-  return "[image] not defined (can't read query string in production)" unless @params[:image].to_s.length > 5
+  @reload = false
 
-  # @params[:reload] = true if request.env['HTTP_CACHE_CONTROL'] == 'no-cache'
+  # full refresh if reload is defined
+  if @params[:reload]
+    if @params[:reload][0,5] == ENV.fetch('RESIZER_SECRET')[0,5]
+      @reload = true
+    else
+      response.headers['X-Error'] = 'BAD REFRESH CODE - RESIZE DISABLED'
+    end
+  elsif request.env['HTTP_IF_NONE_MATCH'] == @etag
+    response.status = 304
+    return
+  end
+
+  ap @reload
 
   img = ImageResizer.new image: @params[:image],
     size:      @params[:size],
     quality:   @params[:quality],
-    reload:  !!@params[:reload],
+    reload:    @reload,
     watermark: @params[:watermark],
     as_webp:   request.env['HTTP_ACCEPT'].to_s.include?('image/webp')
 
@@ -155,8 +165,8 @@ end
 def deliver_data data, opts={}
   response.headers['X-Source']            = opts[:source]  if opts[:source] && ENV['X_SOURCE'] != 'false'
   response.headers['X-Size']              = opts[:size]    if opts[:size]
-  response.headers['X-HumanSize']         = App.filesize data.bytesize
   response.headers['X-Quality']           = opts[:quality] if opts[:quality]
+  response.headers['X-HumanSize']         = App.filesize data.bytesize
 
   response.headers['Accept-Ranges']       = 'bytes'
   response.headers['Etag']                = opts[:etag]
