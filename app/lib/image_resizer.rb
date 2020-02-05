@@ -1,39 +1,140 @@
 # main class that handles image resizing
 
 class ImageResizer
-  attr_reader :ext, :image, :original, :resized, :cache_path, :quality, :size
+  @@opts ||= Struct.new 'ImageResizerOpts', :ext, :image, :original, :resized, :cache_path, :quality, :size, :reload, :as_webp, :request, :watermark
 
-  def initialize image:, size:, quality: nil, watermark: nil, reload: false, as_webp: false
-    ext = image.split('?').first.split('.').reverse[0].to_s.downcase
+  def initialize image:, size:, quality: nil, watermark: nil, reload: false, as_webp: false, request: nil
+    ext = image.split('?').first.split('.').last.to_s.downcase
     ext = 'jpeg' unless ext.length > 2 && ext.length < 5
     ext = 'jpeg' if ext == 'jpg'
 
-    @image     = image
-    @ext       = ext.downcase
-    @quality   = quality < 10 || quality > 100 ? App.config.quality : quality
-    @original  = "#{App.config.root}/cache/o/#{sha1(@image)}.#{@ext}"
-    @reload    = reload
-    @as_webp   = as_webp
-    @size      = size.to_s.gsub(/['"]/, '')
-    @watermark = watermark
-    @size      = nil if @size == ''
+    @opt = @@opts.new
+
+    @opt.image     = image
+    @opt.ext       = ext.downcase
+    @opt.quality   = quality < 10 || quality > 100 ? App.config.quality : quality
+    @opt.original  = "#{App.config.root}/cache/o/#{sha1(@opt.image)}.#{@opt.ext}"
+    @opt.reload    = reload
+    @opt.as_webp   = as_webp
+    @opt.request   = request
+    @opt.size      = size.to_s.gsub(/['"]/, '')
+    @opt.watermark = watermark
+    @opt.size      = nil if @opt.size == ''
 
     # check max width and height
     max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 2000 }).to_i
 
-    if @size
-      for el in @size.split('x').map { |it| it.gsub(/[^\d]/, '').to_i }
+    if @opt.size
+      for el in @opt.size.split('x').map { |it| it.gsub(/[^\d]/, '').to_i }
         raise ArgumentError.new('Image to large, max 1600') if el && el > max_size
       end
     end
 
     # gif has errors and png has no
-    @as_webp = false unless ext == 'jpeg'
+    @opt.as_webp = request && request.env['HTTP_ACCEPT'].to_s.include?('/webp')
+    @opt.as_webp = false unless ['jpeg', 'png', 'webp'].include?(ext)
 
-    File.unlink(@original) if @reload && File.exist?(@original)
-
-    App.log 'RESIZE "%s" TO "%s"' % [@image, @size]
+    File.unlink(@opt.original) if @opt.reload && File.exist?(@opt.original)
   end
+
+  def resize
+    download
+
+    return File.read(@opt.original) if @opt.ext == 'svg'
+
+    if @opt.size
+      raise 'Source image not found' unless info[2]
+
+      # do not apply resize if new width or height is less then original
+      size = @opt.size.split('x')
+      size[1] ||= 0
+      size = size
+        .push(info[2].split('x'))
+        .flatten
+        .map(&:to_i)
+
+
+      @opt.size = info[2] if size[0] > size[2] || size[1] > size[3]
+    else
+      # if size not provided, only apply quality filter
+      @opt.size = info[2]
+    end
+
+    ap @opt.as_webp
+
+    # if original is webp but it is not supporter, it has to be converted
+    if @opt.ext == 'webp' && !@opt.as_webp
+      @opt.ext = 'jpeg'
+    end
+
+    @opt.resized = [App.config.root, "r/s#{@opt.size}/q#{@opt.as_webp ? 95 : @opt.quality}-#{sha1(@opt.image+@opt.watermark.to_s)}.#{@opt.ext}"].join('/cache/')
+    target_dir = @opt.resized.sub(%r{/[^/]+$}, '')
+
+    File.unlink(@opt.resized)         if @opt.reload && File.exist?(@opt.resized)
+    FileUtils.mkdir_p(target_dir) unless Dir.exist?(target_dir)
+
+    unless File.exists?(@opt.resized)
+      text  = 'RESIZE "%s" TO "%s"' % [@opt.image, @opt.size]
+      text += ' (%s | %s)' % [@opt.request.ip || '-', @opt.request.env['HTTP_REFERER'] || '-'] if @opt.request
+      App.log text
+
+      convert_base
+      apply_watermark
+      optimize
+    end
+
+    unless File.exists? @opt.resized
+      File.unlink(@opt.original)
+      raise 'Resize failed'
+    end
+
+    @opt.cache_path =
+    if @opt.as_webp
+      @opt.ext = 'webp'
+      new_target = @opt.resized.sub(/\.\w+$/, '.webp')
+
+      if @opt.reload || !File.exist?(new_target)
+        run "cwebp -quiet -q #{@opt.quality.to_i} #{@opt.resized} -o #{new_target}"
+      end
+
+      new_target
+    else
+      @opt.resized
+    end
+
+    File.read @opt.cache_path
+  rescue => e
+    error = e.message
+    error = 'Resize error' if error.include?('No such file')
+    raise error
+  end
+
+  def content_type
+    case @opt.ext
+      when 'svg'
+        'svg+xml'
+      else
+        @opt.ext
+    end
+  end
+
+  def info
+    @info ||= `identify #{@opt.original}`.split(' ')
+  end
+
+  def size
+    @opt.size
+  end
+
+  def quality
+    @opt.quality
+  end
+
+  def resized
+    @opt.resized
+  end
+
+  private
 
   def sha1 data
     Digest::SHA1.hexdigest data
@@ -44,35 +145,27 @@ class ImageResizer
     system "#{what} 2>&1"
   end
 
-  def content_type
-    case @ext
-      when 'svg'
-        'svg+xml'
-      else
-        @ext
-    end
-  end
-
   def download
-    unless File.exists?(@original)
-      run "curl -L '#{@image}' --create-dirs -s -o '#{@original}'"
+    unless File.exists?(@opt.original)
+      run "curl -L '#{@opt.image}' --create-dirs -s -o '#{@opt.original}'"
 
-      if File.exists?(@original)
-        App.log 'DOWNLOAD %s (%d kb)' % [@image, File.stat(@original).size/1024]
+      if File.exists?(@opt.original)
+        App.log 'DOWNLOAD %s (%d kb)' % [@opt.image, File.stat(@opt.original).size/1024]
       else
-        raise "Can't download source from %s" % @image
+        raise "Can't download source from %s" % @opt.image
       end
     end
 
-    @ext = info[1].downcase if info[2].to_s.include?('x')
+    @opt.ext = info[1].downcase if info[2].to_s.include?('x')
+    @opt.ext = 'webp' if @opt.ext == 'pam'
 
     raise 'Source error' if info[2] == '0x0'
 
-    @original
+    @opt.original
   end
 
   def convert_base
-    size = @size
+    size = @opt.size
 
     do_unsharp =
       if size.include?('u')
@@ -89,95 +182,34 @@ class ImageResizer
     opts = []
     opts.push '-auto-orient'
     opts.push '-strip'
-    opts.push "-quality #{@quality}"
+    opts.push "-quality 95"
     opts.push '-resize %s' % size
-    opts.push '-unsharp %s' % ENV.fetch('UNSHARP_MASK') { '1x1+1+0' } if do_unsharp && @ext == 'jpeg'
+    opts.push '-unsharp %s' % ENV.fetch('UNSHARP_MASK') { '1x1+1+0' } if do_unsharp && @opt.ext == 'jpeg'
     opts.push '-interlace Plane'
-    opts.push '-background none' if @ext == 'png'
+    opts.push '-background none' if @opt.ext == 'png'
 
     if size.include?('^')
       opts.push '-gravity North'
       opts.push '-extent %s' % size.sub('^','')
     end
 
-    run 'convert "%s" %s %s' % [@original, opts.join(' '), @resized]
+    run 'convert "%s" %s %s' % [@opt.original, opts.join(' '), @opt.resized]
   end
 
   def optimize
-    case @ext
+    case @opt.ext
       when 'png'
-        run "pngquant -f --output #{@resized} #{@resized}"
+        run "pngquant -f --output #{@opt.resized} #{@opt.resized}"
     end
   end
 
   def apply_watermark
-    return unless @watermark
+    return unless @opt.watermark
 
-    image, gravity, percent = @watermark.split(':')
+    image, gravity, percent = @opt.watermark.split(':')
     gravity ||= 'SouthEast' # None, Center, East, Forget, NorthEast, North, NorthWest, SouthEast, South, SouthWest, West
     percent ||= 30
 
-    run "composite -watermark 30% -gravity #{gravity} ./public/#{image}.png #{@resized} #{@resized}"
-  end
-
-  def resize
-    download
-
-    return File.read(@original) if @ext == 'svg'
-
-    if @size
-      raise 'Source image not found' unless info[2]
-
-      # do not apply resize if new width or height is less then original
-      size = @size.split('x')
-      size[1] ||= 0
-      size = size
-        .push(info[2].split('x'))
-        .flatten
-        .map(&:to_i)
-
-
-      @size = info[2] if size[0] > size[2] || size[1] > size[3]
-    else
-      # if size not provided, only apply quality filter
-      @size = info[2]
-    end
-
-    @resized = [App.config.root, "r/s#{@size}/q#{@quality}-#{sha1(@image+@watermark.to_s)}.#{@ext}"].join('/cache/')
-    target_dir = @resized.sub(%r{/[^/]+$}, '')
-
-    File.unlink(@resized)         if @reload && File.exist?(@resized)
-    FileUtils.mkdir_p(target_dir) unless Dir.exist?(target_dir)
-
-    unless File.exists? @resized
-      convert_base
-      apply_watermark
-      optimize
-    end
-
-    unless File.exists? @resized
-      File.unlink(@original)
-      raise 'Resize failed'
-    end
-
-    @cache_path =
-    if @as_webp
-      @ext = 'webp'
-      new_target = @resized.sub(/\.\w+$/, '.webp')
-      run "cwebp -quiet -q #{@quality.to_i - 15} #{@resized} -o #{new_target}"
-      new_target
-    else
-      @resized
-    end
-
-    File.read @cache_path
-  rescue => e
-    error = e.message
-    error = 'Resize error' if error.include?('No such file')
-    raise error
-  end
-
-  def info
-    @info ||= `identify #{@original}`.split(' ')
+    run "composite -watermark 30% -gravity #{gravity} ./public/#{image}.png #{@opt.resized} #{@opt.resized}"
   end
 end

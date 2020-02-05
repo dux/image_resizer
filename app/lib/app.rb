@@ -3,19 +3,25 @@
 module App
   extend self
 
-  CONFIG = Struct.new(:url, :icon, :logger, :error_logger, :root, :secret, :quality, :clear_interval, :env).new
+  CONFIG = Struct.new(:server, :icon, :logger, :error_logger, :root, :secret, :quality, :clear_interval, :env, :allow_origin, :aws_secret_access_key, :aws_access_key_id, :aws_region, :aws_bucket).new
 
   CONFIG.icon           = File.read('./public/favicon.ico')
   CONFIG.root           = File.expand_path('../..', File.dirname(__FILE__))
-  CONFIG.secret         = ENV.fetch('RESIZER_SECRET')
-  CONFIG.quality        = ENV.fetch('QUALITY') { 95 }
-  CONFIG.clear_interval = ENV.fetch('RESIZER_CACHE_CLEAR') { 2 }
-  CONFIG.url            = ENV.fetch('RESIZER_SERVER')
-  CONFIG.env            = ENV.fetch('RACK_ENV')
+  CONFIG.secret         = ENV.fetch('RESIZER_SECRET')       { 'secret' }
+  CONFIG.quality        = ENV.fetch('RESIZER_QUALITY')      { 85 }
+  CONFIG.clear_interval = ENV.fetch('RESIZER_CACHE_CLEAR')  { 10 }
+  CONFIG.server         = ENV.fetch('RESIZER_SERVER')       { 'http://localhost:4000' }
+  CONFIG.allow_origin   = ENV.fetch('RESIZER_ALLOW_ORIGIN') { '*' }
+  CONFIG.env            = ENV.fetch('RACK_ENV')             { 'development' }
 
   CONFIG.logger         = Logger.new('./log/app.log', 'weekly')
   CONFIG.error_logger   = Logger.new('./log/errors.log', 'weekly')
   CONFIG.error_logger.formatter = CONFIG.logger.formatter = proc { |severity, datetime, progname, msg| "#{datetime}: #{msg}\n" }
+
+  # CONFIG.aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+  # CONFIG.aws_access_key_id     = ENV['AWS_ACCESS_KEY_ID']
+  # CONFIG.aws_region            = ENV['AWS_REGION']
+  # CONFIG.aws_bucket            = ENV['AWS_BUCKET']
 
   @last_cache_check = 0
 
@@ -37,7 +43,7 @@ module App
     if dev?
       puts data
     else
-      config.error_logger.info data
+      config.logger.info data
     end
   end
 
@@ -51,7 +57,7 @@ module App
   end
 
   def die text
-    log.error text
+    log_error text
     puts text.red
     exit
   end
@@ -69,7 +75,10 @@ module App
     count = `#{base} | wc -l`.chomp.to_i
 
     if count > 0
-      Thread.new { system "#{base} -delete" }
+      Thread.new do
+        system "#{base} -delete"
+        `find ./log -type f -atime +7 -delete`
+      end
 
       log 'CLEARED %d file/s from cache dirs, older than %s days' % [count, config.clear_interval]
     end
@@ -87,5 +96,10 @@ module App
     }.each_pair do |e, s|
       return "#{(size / (s / 1024)).round(['B'].include?(e) ? 0 : 2)} #{e}" if size < s
     end
+  end
+
+  def code string
+    str = Digest::SHA1.hexdigest CONFIG.secret + string
+    str[0,6]
   end
 end

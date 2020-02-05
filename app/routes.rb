@@ -1,4 +1,8 @@
 before do
+  # response.headers['Access-Control-Allow-Origin'] = App.config.allow_origin
+  # response.headers['Access-Control-Allow-Headers'] = '*'
+  # response.headers['Access-Control-Request-Method'] = 'POST'
+
   # define etag and return from cache if possible
   @etag = '"%s"' % Digest::SHA1.hexdigest(request.url)
 end
@@ -6,6 +10,12 @@ end
 ###
 
 get('/healthcheck') { 'ok' }
+
+# options '/*' do
+#   response.headers['Allow'] = 'OPTIONS, GET, HEAD, POST'
+#   response.headers['Cache-Control'] = 'max-age=604800'
+#   status 204
+# end
 
 get '/' do
   @version = File.read('.version')
@@ -33,14 +43,14 @@ get '/r/*' do
   end
 end
 
-get '/log' do
+get '/log/:secret' do
   raise 'secret not defined' unless params[:secret] == ENV.fetch('RESIZER_SECRET')
 
-  lines = `tail -n 2000 ./log/production.log`.split($/).reverse.join("\n")
+  lines = `tail -n 2000 ./log/app.log`.split($/).reverse.join("\n")
 
   content_type :text
 
-  lines
+  "#{`du -sh ./cache`}\n\n" +lines
 end
 
 get '/favicon.ico' do

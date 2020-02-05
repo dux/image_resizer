@@ -62,20 +62,27 @@ def render_image
   @params[:watermark] ||= @params.delete(:w)
   @params[:error_url] ||= @params.delete(:e)
 
+  if App.dev?
+    print "\e[H\e[2J\e[3J" # clear osx screen :)
+    ap @params
+  end
+
   # check for image existance
   unless @params[:image].to_s.length > 5
     return "[image] not defined (can't read query string in production)"
   end
 
   # return if image is from local server
-  if @params[:image].start_with?(App.config.url)
-    raise 'Cant referece image on self (%s)' % App.config.url
+  if @params[:image].start_with?(App.config.server)
+    raise 'Cant referece image on self (%s)' % App.config.server
   end
 
   @reload = false
 
   # full refresh if reload is defined
-  if @params[:reload]
+  if request.env['HTTP_CACHE_CONTROL'] == 'no-cache' && App.dev?
+    @reload = true
+  elsif @params[:reload]
     if @params[:reload][0,5] == ENV.fetch('RESIZER_SECRET')[0,5]
       @reload = true
     else
@@ -86,19 +93,17 @@ def render_image
     return
   end
 
-  ap @reload
-
-  img = ImageResizer.new image: @params[:image],
+  img = ImageResizer.new request: request,
+    image:     @params[:image],
     size:      @params[:size],
     quality:   @params[:quality],
     reload:    @reload,
-    watermark: @params[:watermark],
-    as_webp:   request.env['HTTP_ACCEPT'].to_s.include?('image/webp')
+    watermark: @params[:watermark]
 
   deliver_data img.resize,
-    source:       @params[:image],
+    source:       '%s (%s)' % [@params[:image], img.info[1]],
     etag:         @etag,
-    size:         img.size,
+    size:         '%s (from %s)' % [img.size, img.info[2]],
     quality:      img.quality,
     content_type: img.content_type
 end
@@ -180,6 +185,8 @@ def deliver_data data, opts={}
   response.headers['Content-Disposition'] = 'inline'
 
   response.status = 200
+
+  ap Hash[response.headers.sort] if App.dev?
 
   data
 end

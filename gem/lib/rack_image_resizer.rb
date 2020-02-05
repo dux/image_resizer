@@ -13,10 +13,6 @@ module ::RackImageResizer
     @@config.send '%s=' % name, value
   end
 
-  def get name
-    @@config.send(name) || ENV.fetch('RESIZER_%s' % name.to_s.upcase)
-  end
-
   def config
     if block_given?
       yield @@config
@@ -26,7 +22,7 @@ module ::RackImageResizer
   end
 
   def prefix_it url
-    url[0,1] == '/' ? get(:host) + url : url
+    url[0,1] == '/' ? App.config.host + url : url
   end
 
   ###
@@ -57,7 +53,7 @@ module ::RackImageResizer
     data.push Base64.urlsafe_encode64(opts.to_json).gsub(/=*\s*$/, '')
 
     # add check, 2 chars
-    data.push Digest::SHA1.hexdigest(get(:secret)+data.first)[0,2]
+    data.push Digest::SHA1.hexdigest(App.config.secret+data.first)[0,2]
 
     # add extension
     ext = opts[:i].split('.').last.to_s.downcase
@@ -65,6 +61,6 @@ module ::RackImageResizer
     data.push '.%s' % ext
 
     # return full url
-    [get(:server), data.join('')].join('/r/')
+    [App.config.server, data.join('')].join('/r/')
   end
 end
