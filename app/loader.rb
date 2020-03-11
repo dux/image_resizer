@@ -18,5 +18,7 @@ App.die('RESIZER_SECRET not defined') unless ENV['RESIZER_SECRET']
 # clear stale cache on start
 App.clear_cache_do
 
-
-
+# create base dirs
+%w(cache tmp log).each do |dir|
+  Dir.mkdir('./%s' % dir) unless Dir.exist?('./%s' % dir)
+end

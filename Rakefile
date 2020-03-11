@@ -23,7 +23,8 @@ end
 
 desc 'Run production server'
 task :production do
-  run 'bundle exec puma -e production -w 2 -t 0:32'
+  dir = `pwd`.chomp
+  run "puma -e production --dir #{dir} -C #{dir}/config/puma.rb"
 end
 
 desc 'Clear cache'
