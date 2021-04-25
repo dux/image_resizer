@@ -1,60 +1,43 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Sinatra image reizer by @dux</title>
-    <style>
-      body { font-family: arial; font-size:15px; margin-left:30px; }
-      input { padding:4px; width:70px; font-size:14px; }
-      button { padding: 7px; font-size: 14px;}
-      td { height:40px; }
-      td.l { width:150px; text-align: right; padding-right: 20px; }
-      li { margin-bottom:10px; }
-      #error div { background-color: #faa; padding:4px; }
-      h2 { margin-top: 40px; }
-    </style>
-    <script>
-      window.inform = function(what) {
-        document.getElementById('error').innerHTML = '<div>' + what + '</div>';
-        console.log(what);
-      };
+<script>
+  window.inform = function(what) {
+    document.getElementById('error').innerHTML = '<div>' + what + '</div>';
+    console.log(what);
+  };
 
-      window.open_url = function(debug) {
-        var opts = {}, url = [], val, width, height;
+  window.open_url = function(debug) {
+    var opts = {}, url = [], val, width, height;
 
-        document.getElementById('error').innerHTML = '';
+    document.getElementById('error').innerHTML = '';
 
-        for (el of ['image', 'q']) {
-          val = document.getElementById(el).value;
-          if (val) opts[el] = val
-        }
+    for (el of ['image', 'q']) {
+      val = document.getElementById(el).value;
+      if (val) opts[el] = val
+    }
 
-        opts.size = document.getElementById('size').value || 200;
+    opts.size = document.getElementById('size').value || 200;
 
-        if (! opts.image) {
-          return inform('Image URL is required');
-        }
+    if (! opts.image) {
+      return inform('Image URL is required');
+    }
 
-        for (k of Object.keys(opts)) {
-          url.push(k + '=' + escape(opts[k]))
-        }
+    for (k of Object.keys(opts)) {
+      url.push(k + '=' + escape(opts[k]))
+    }
 
-        url = url.join('&')
-        var live_url = '/r?' + url
-        var pack_url = '/pack?' + url
+    url = url.join('&')
+    var live_url = '/r?' + url
+    var pack_url = '/pack?' + url
 
-        document.getElementById('hash').innerHTML = JSON.stringify(opts)
-        document.getElementById('live').innerHTML = '<a target="_new" href="' + live_url + '">' + live_url + '</a>'
-        document.getElementById('pack').innerHTML = '<a target="_new" href="' + pack_url + '">' + pack_url + '</a>'
-      }
-    </script>
-</head>
-<body>
-  <h1>Ruby Rack image reizer by @dux</h1>
+    document.getElementById('hash').innerHTML = JSON.stringify(opts)
+    document.getElementById('live').innerHTML = '<a target="_new" href="' + live_url + '">' + live_url + '</a>'
+    document.getElementById('pack').innerHTML = '<a target="_new" href="' + pack_url + '">' + pack_url + '</a>'
+  }
+</script>
 
-  <h3>v<%= @version %> &mdash; server mode <%= ENV.fetch('RACK_ENV') %></h3>
+<%= render :erb, :_header %>
 
-  <h2>Client usage</h2>
-  <pre>
+<h2>Client usage</h2>
+<pre>
 require "rack_image_resizer"
 
 RackImageResizer.set :secret, "foobarbaz"
@@ -65,9 +48,9 @@ RackImageResizer.set :server, "https://resizer.myapp.com"
 @image.url.resized("200")      # resize image width to 200px
 @image.url.resized("x200")     # resize image height to 200px
 @image.url.resized("200x200")  # resize image to fix 200x200 box
-@image.url.resized("^200x200") # resize crop image width to 200x200
-@image.url.resized("^200")     # resize crop image width to 200x200
-@image.url.resized("u^100")    # resize crop image width to 100x100 and apply unsharp mask
+@image.url.resized("c200x200") # resize crop image width to 200x200
+@image.url.resized("c200")     # resize crop image width to 200x200
+@image.url.resized("uc100")    # resize crop image width to 100x100 and apply unsharp mask
 
 # or
 @image.url.resized + '?s=x200' # dinamicly assign resize attributes
@@ -110,7 +93,7 @@ RackImageResizer.set :server, "https://resizer.myapp.com"
     </tr>
   </table>
 
-  <p>info: in development options can be sent as query string</p>
+<p>info: in development options can be sent as query string</p>
 
 </body>
 </html>

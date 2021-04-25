@@ -18,12 +18,12 @@ end
 
 desc 'Run development server'
 task :dev do
-  run 'find ./app | entr -r bundle exec puma -p 4000 -t 0:16'
+  run 'find ./ | entr -r bundle exec puma -p 4000 -t 0:64'
 end
 
 desc 'Run production server'
 task :production do
-  run 'bundle exec puma -e production -w 2 -t 0:32'
+  run 'bundle exec puma -e production -w 2 -t 0:64'
 end
 
 desc 'Clear cache'
@@ -107,4 +107,10 @@ task :test_upload do
   s3a = AwsS3Asset.new(source: 'https://i.imgur.com/UPc8aYn.jpg')
   s3a.upload
   puts s3a.url
+end
+
+task :tmp do
+  require_relative 'app/libs'
+
+  puts RackImageResizer.resize_url i: 'http://i.imgur.com/krurDGE.jpg'
 end

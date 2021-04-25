@@ -9,6 +9,35 @@ end
 
 ###
 
+# only in development
+if App.dev?
+  get '/upload/test' do
+    erb :upload_test
+  end
+
+  get '/resize_test' do
+    erb :resize_test
+  end
+
+  get '/ico_test' do
+    erb :ico_test
+  end
+
+  get '/upload_test' do
+    erb :upload_test
+  end
+
+  get '/r' do
+    App.clear_cache
+
+    @params = params
+
+    render_image
+  end
+end
+
+###
+
 get('/healthcheck') { 'ok' }
 
 # options '/*' do
@@ -37,7 +66,9 @@ get '/r/*' do
   rescued do
     App.clear_cache
 
-    @params = unpack_url params[:splat].first
+    @params = RackImageResizer.resize_url_unpack params[:splat].first, params
+
+    ap @params
 
     render_image
   end
@@ -64,7 +95,7 @@ get '/favicon.ico' do
 end
 
 get '/ico/:domain' do
-  ico  = find_ico params[:domain]
+  ico  = find_ico RackImageResizer.decode params[:domain]
   data = File.read(ico)
 
   content_type =
@@ -91,37 +122,29 @@ end
 
 get '/upload' do
   if App.dev?
-    redirect ImageResizer.upload_path(request)
+    redirect RackImageResizer.upload_path(request)
   else
     error 'Checksum not provided'
   end
 end
 
-get '/upload/:header_checksum' do
-  header_checksum
+get '/upload/:time_check' do
+  time_check
 
   erb :upload
 end
 
-post '/upload/:header_checksum' do
-  header_checksum
+post '/upload/:time_check' do
+  time_check
 
-  'ok'
-end
+  opts = {}
+  opts[:source]    = params[:image]['tempfile'].path
+  opts[:max_width] = 1600
+  opts[:is_image]  = true
 
-# only in development
-if App.dev?
-  get '/test' do
-    @movies_json = File.read './public/movies.js'
-
-    erb :test
-  end
-
-  get '/r' do
-    App.clear_cache
-
-    @params = params
-
-    render_image
-  end
+  s3 = AwsS3Asset.new opts
+  s3.upload
+rescue => e
+  Lux.error.log e
+  'Error: %s' % e.message
 end

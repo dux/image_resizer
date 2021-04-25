@@ -148,7 +148,7 @@ class ImageResizer
 
   def download
     unless File.exists?(@opt.original)
-      run "curl -L '#{@opt.image}' --create-dirs -s -o '#{@opt.original}'"
+      run "curl --max-time 10 -L '#{@opt.image}' --create-dirs -s -o '#{@opt.original}'"
 
       if File.exists?(@opt.original)
         App.log 'DOWNLOAD %s (%d kb)' % [@opt.image, File.stat(@opt.original).size/1024]

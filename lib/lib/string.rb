@@ -7,9 +7,9 @@ unless ''.respond_to?(:resized)
     def resized opts=nil
       opts   ||= {}
       opts     = { s: opts } unless opts.is_a?(Hash)
-      opts[:i] = self
+      opts[:i] = dup
 
-      RackImageResizer.build opts
+      RackImageResizer.resize_url opts
     end
   end
 end

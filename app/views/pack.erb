@@ -1,10 +1,6 @@
-<html>
-  <head>
-    <meta http-equiv="Accept-CH" content="DPR, Width, Viewport-Width">
-    <title>Packer</title>
-  </head>
-  <body>
-    <h3>On server</h3>
+<%= render :erb, :_header %>
+
+<h3>On server</h3>
 
 <pre>
 '<%= @image %>'.resized('<%= @size %>')
@@ -16,25 +12,23 @@
  # add &w=watermark parameter to add test watermark from "./public/watermark.png"
 </pre>
 
-    <hr />
+<hr />
 
-    <h3>Will output</h3>
+<h3>Will output</h3>
 
-    <br />
-    <br />
+<br />
+<br />
 
-    <img src="<%= @url1 %>" style="border: 1px solid #ccc;" />
-    <img src="<%= @url2 %>" style="border: 1px solid #ccc;" />
+<img src="<%= @url1 %>" style="border: 1px solid #ccc;" />
+<img src="<%= @url2 %>" style="border: 1px solid #ccc;" />
 
-    <h3>Quick tester<h3>
+<h3>Quick tester<h3>
 
-    <table>
-      <% for size in [200, 'x200', '200x200', '^200x200'] %>
-        <tr>
-          <td>size: <%= size %></td>
-          <td><img src="/r?image=<%= @image %>&size=<%= size %>" ></td>
-        </tr>
-      <% end %>
-    </table>
-  </body>
-</html>
+<table>
+  <% for size in [200, 'x200', '200x200', '^200x200'] %>
+    <tr>
+      <td>size: <%= size %></td>
+      <td><img src="/r?image=<%= @image %>&size=<%= size %>" ></td>
+    </tr>
+  <% end %>
+</table>

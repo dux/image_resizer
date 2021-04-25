@@ -1,0 +1,18 @@
+<%= render :erb, :_header %>
+
+<pre class="code">
+  # code example
+  RackImageResizer.ico_path(domain)
+</pre>
+
+<h2>Top internet 1000 sites</h2>
+
+<ol>
+<%
+  for domain in File.read('./public/domains.txt').split($/)
+    %>
+      <li><img src="<%= RackImageResizer.ico_path(domain) %>" style="width:16px; height: 16px; vertical-align: middle;" /> <a href="https://www.<%= domain %>"><%= domain %></a></li>
+    <%
+  end
+%>
+</ol>

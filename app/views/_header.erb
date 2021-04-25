@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sinatra image reizer by @dux</title>
+</head>
+<body>
+
+<style>
+  body { font-family: arial; font-size:15px; margin-left:30px; overflow-y: scroll; }
+  input { padding:4px; width:70px; font-size:14px; }
+  button { padding: 7px; font-size: 14px;}
+  td { height:40px; }
+  td.l { width:150px; text-align: right; padding-right: 20px; }
+  li { margin-bottom:10px; }
+  #error div { background-color: #faa; padding:4px; }
+  h2 { margin-top: 20px; }
+  hr { margin-top: 20px; }
+  a.nav { display: inline-block; padding: 5px 15px; text-decoration: none; border: 1px solid #ccc; background: #eee; border-radius: 5px; color: #777; }
+  a.nav.active { border: 1px solid #aaa; background: #ccc; color: #222; }
+  pre.code { background: #f7f7f7; border: 1px solid #ddd; padding: 10px 1px; line-height: 20px; }
+</style>
+
+<h1>Ruby Rack image reizer by @dux</h1>
+
+<h3>v<%= File.read('./.version') %> &mdash; server mode <%= ENV.fetch('RACK_ENV') %></h3>
+
+<%
+  @nav = [
+    ['/', 'Home'],
+    ['/resize_test', 'Bulk resize tester'],
+    ['/upload_test', 'Iframe img upload tester'],
+    ['/ico_test', 'URL ico test']
+  ]
+
+  for path, name in @nav
+    %><a class="nav <%= request.path == path ? :active : nil %>" href="<%= path %>"><%= name %></a> <%
+  end
+%>
+
+<hr />

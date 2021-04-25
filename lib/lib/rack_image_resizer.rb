@@ -25,47 +25,65 @@ module ::RackImageResizer
     Digest::SHA1.hexdigest(App.config.secret+str)[0, length]
   end
 
-  def header_checksum request
-    str = request.env['HTTP_USER_AGENT'].to_s + request.env['HTTP_ACCEPT'].to_s
-    checksum(str, 8)
+  def encode object
+    data = []
+
+    # add base
+    data = object.is_a?(String) ? object : object.to_json
+    data = Base64.urlsafe_encode64(data).gsub(/=*\s*$/, '')
+
+    # add check, 2 chars
+    data + checksum(data)
+  end
+
+  def decode string
+    base, check = string.slice!(0...-2), string
+
+    data = Base64.urlsafe_decode64(base)
+
+    if data[0,1] == '{'
+      data = JSON.load data
+      data = data.inject({}) { |it, (k,v)| it[k.to_sym] = v; it }
+    else
+      data
+    end
   end
 
   ###
 
-  def build opts
+  def resize_url opts
     opts[:p] ||= opts.delete(:proxy)
     opts[:i] ||= opts.delete(:image)
     opts[:s] ||= opts.delete(:size) || opts.delete(:w) || opts.delete(:width)
     opts[:e] ||= opts.delete(:onerror) if opts[:onerror]
 
+    opts = opts.delete_if { |_, value| !value }
+
     # return empty pixel unless self
     return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" if opts[:i].to_s == ''
 
-    raise ArgumentError.new('Invalid URL, no https?:// found') unless opts[:i] =~ %r{^https?://}
+    # optimize
+    opts[:i].sub! /^http/, ''
 
-    # reduce size of a hash by stripping 'https?://' - 7 characters
-    opts[:i] = opts[:i].sub(%r{^(\w+)://}, '')
-    prefix = $1 == 'https' ? 's' : 'p'
-    opts[:i] = prefix + opts[:i]
-
-    data = []
-
-    # add base
-    data.push Base64.urlsafe_encode64(opts.to_json).gsub(/=*\s*$/, '')
-
-    # add check, 2 chars
-    data.push checksum(data.first)
-
-    # add extension
-    ext = opts[:i].split('.').last.to_s.downcase
-    ext = 'jpg' unless ['jpg', 'jpeg', 'gif', 'png', 'svg'].index(ext)
-    data.push '.%s' % ext
+    # raise unless is url
+    raise ArgumentError.new('Invalid URL, no https?:// found') unless opts[:i] =~ %r{^s?://}
 
     # return full url
-    [App.config.server, data.join('')].join('/r/')
+    [App.config.server, encode(opts)].join('/r/')
+  end
+
+  def resize_url_unpack string, params={}
+    decode(string).tap do |opts|
+      opts[:i] = 'http' + opts[:i]
+      opts[:s] ||= params[:s]
+    end
   end
 
   def upload_path request
-    '%s/upload/%s' % [@@config.server, header_checksum(request)]
+    '%s/upload/%s' % [@@config.server, encode(Time.now.to_i.to_s)]
+  end
+
+  def ico_path domain
+    '%s/ico/%s' % [@@config.server, encode(domain)]
   end
 end

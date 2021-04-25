@@ -1,0 +1,35 @@
+<%= render :erb, :_header %>
+
+<h2>Image upload test</h2>
+
+<pre class="code">
+  # code example ruby
+  RackImageResizer.upload_path(request)
+
+  # code example JavaScript
+  window.addEventListener('message', function(e) {
+    const msg = JSON.parse(e.data)
+
+    if (msg.type == 'image-upload') {
+      document.getElementById('target').value = msg.url
+    }
+  });
+</pre>
+
+<h2>Uploaded image path </h2>
+<input id="target" type="text" style="width: 800px;" />
+
+<hr />
+
+<iframe src="<%= RackImageResizer.upload_path(request) %>" style="width: 300px; height: 200px; border: 0;"></iframe>
+
+<script>
+window.addEventListener('message', function(e) {
+  const msg = JSON.parse(e.data)
+
+  if (msg.type == 'image-upload') {
+    document.getElementById('target').value = msg.url
+  }
+});
+</script>
+

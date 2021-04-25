@@ -1,0 +1,66 @@
+<script><%= File.read('./public/movies.js') %></script>
+<style>
+  body { font-family: Arial; font-size: 95%; margin: 10px; }
+  input, button { font-size: 100%;}
+  li { margin-bottom: 5px; }
+
+  #target {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  #target img {
+    border:1px solid #aaa;
+    margin: 0 10px 10px 0;
+  }
+</style>
+<%= render :erb, :_header %>
+<h2>Bulk resize tester</h2>
+
+<p>Click on the image to see original image</p>
+<p>Resizeing options</p>
+<ul>
+  <li>200 - resize width</li>
+  <li>x200 - resize height</li>
+  <li>200x200 - resize fit</li>
+  <li>c200x200 - resize crop</li>
+</ul>
+<p>tips</p>
+<ul>
+  <li>ingore first run, ton of images need to be downloaded and cached</li>
+  <li>click "go!" after first run -> speed to render all from cache</li>
+  <li>set size to 201 and click "go!". That is speed to resize images with download cache</li>
+</ul>
+<table>
+  <tr>
+    <td>Resize to</td><td><input type="text" id="size" value="200" /> <button onclick="draw_thumbs(document.getElementById('size').value)">Go!</button></td>
+  </tr>
+</table>
+<p>Seconds to reisze <script>document.write(window.imgs.length)</script> images: <b id="total">calculating ...</b> seconds</p>
+<br />
+
+<div id="target" onload="alert(1)"></div>
+<script>
+window.r_time = function() {
+  document.getElementById('total').innerHTML = (new Date() - window.start)/1000
+}
+
+window.draw_thumbs = function(size) {
+  document.getElementById('total').innerHTML = '...'
+
+  var size = document.getElementById('size').value;
+
+  target.innerHTML = '';
+
+  window.start = new Date();
+
+  imgs.forEach((img)=>{
+    target.innerHTML += '<a href="'+img+'"><img onload="r_time()" src="/r?size='+size+'&image='+escape(img)+'" /></a>'
+  })
+}
+
+draw_thumbs(200);
+</script>
+
+</body>
+</html>

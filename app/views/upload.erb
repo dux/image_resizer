@@ -37,9 +37,11 @@
   <div class="dropzone"></div>
 
   <script>
+    Dropzone.autoDiscover = false;
+
     let myDropzone = new Dropzone('.dropzone', {
       paramName:     'image',
-      url:           '/upload/asda',
+      url:           '<%= request.path %>',
       maxFilesize:   1,
       acceptedFiles: "image/*"
     });
@@ -50,9 +52,18 @@
       if (text.indexOf('Error:') > -1) {
         Info.error(text);
       } else {
-        // Dialog.callback(text);
+        sendMessage(text);
       }
     });
+
+    function sendMessage(message) {
+      var msg = { type: 'image-upload', url: message }
+      window.parent.postMessage(JSON.stringify(msg), '*');
+    }
+
+    setTimeout(()=>{
+      sendMessage('message from iframe, waiting for URL')
+    }, 1000)
   </script>
 </body>
 </html>

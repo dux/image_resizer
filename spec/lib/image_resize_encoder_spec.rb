@@ -36,7 +36,7 @@ describe 'image resizer' do
   end
 
   it 'shoud generate pack url' do
-    expect(url.split('/').last.length).to eq(80)
+    expect(url.split('/').last.length).to eq(78)
   end
 
   it 'shoud unpack url' do
