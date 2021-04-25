@@ -6,13 +6,12 @@ require 'dotenv'
 require 'bundler/setup'
 require 'logger'
 require 'awesome_print'
+require 'hash_wia'
 
 Dotenv.load
 Bundler.require
 
 require_relative 'lib/app'
 require_relative 'lib/image_resizer'
-require_relative '../gem/lib/rack_image_resizer'
-
-ENV['RESIZER_SERVER']      ||= 'http://localhost:4000'
-ENV['RESIZER_CACHE_CLEAR'] ||= '2'
+require_relative 'lib/aws_s3_asset'
+require_relative '../lib/rack_image_resizer'

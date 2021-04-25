@@ -15,7 +15,7 @@ RackImageResizer.config do |c
   c.server = "https://resizer.myapp.com"
 end
 
-# RackImageResizer.build s: '^200x100'
+# ImageResizer.build s: '^200x100'
 
 @image.url.resized("200")      # resize image width to 200px
 @image.url.resized("x200")     # resize image height to 200px

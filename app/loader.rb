@@ -1,8 +1,8 @@
 #!/usr/bin/ruby
 
 require_relative 'libs'
-require_relative 'routes'
-require_relative 'router_helper'
+require_relative 'routes/routes'
+require_relative 'routes/helper'
 
 puts '* Clearing staled cache older then %s days' % App.config.clear_interval
 
@@ -17,6 +17,3 @@ App.die('RESIZER_SECRET not defined') unless App.config.secret
 
 # clear stale cache on start
 App.clear_cache_do
-
-
-

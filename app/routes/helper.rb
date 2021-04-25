@@ -1,3 +1,9 @@
+def header_checksum
+  unless ImageResizer.header_checksum(request) == params[:header_checksum]
+    error 'Error: header_checksum mismatch'
+  end
+end
+
 def rescued
   begin
     yield

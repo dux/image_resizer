@@ -11,6 +11,7 @@ gem 'sinatra'
 # for site icon get
 gem 'rest-client'
 gem 'nokogiri'
+gem 'hash_wia'
 
 group :development do
   gem 'awesome_print'

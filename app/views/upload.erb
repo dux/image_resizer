@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image resizer upload iframe</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.8.1/min/dropzone.min.js"></script>
+</head>
+<body>
+  <style lang="scss">
+    body {
+      padding: 0px;
+      margin: 0px;
+    }
+
+    .dropzone {
+      border: 1px solid #ccf;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      padding:50px 20px;
+      background-color:#eef;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .dropzone button {
+      padding: 7px 15px;
+    }
+
+    .dropzone:hover { border: 1px solid #aaf;  }
+
+    .dropzone svg { display: none; }
+  </style>
+
+  <div class="dropzone"></div>
+
+  <script>
+    let myDropzone = new Dropzone('.dropzone', {
+      paramName:     'image',
+      url:           '/upload/asda',
+      maxFilesize:   1,
+      acceptedFiles: "image/*"
+    });
+
+    myDropzone.on("complete", function(response) {
+      let text = response.xhr.responseText;
+
+      if (text.indexOf('Error:') > -1) {
+        Info.error(text);
+      } else {
+        // Dialog.callback(text);
+      }
+    });
+  </script>
+</body>
+</html>

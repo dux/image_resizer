@@ -33,20 +33,11 @@ end
 
 desc 'Get console'
 task :console do
-  require './gem/lib/rack_image_resizer'
-  require './gem/lib/string'
+  require_relative 'app/libs'
 
-  Dotenv.load
-
-  begin
-    require 'pry'
-    AwesomePrint.pry!
-    Pry
-  rescue LoadError
-    puts 'pry not found, starting irb'.red
-    require 'irb'
-    IRB
-  end.start
+  require 'pry'
+  AwesomePrint.pry!
+  Pry.start
 end
 
 desc 'Install dependecies'
@@ -108,4 +99,12 @@ task :nginx do
   conf = conf.gsub('$root', `pwd`.chomp)
 
   puts conf
+end
+
+task :test_upload do
+  require_relative 'app/libs'
+
+  s3a = AwsS3Asset.new(source: 'https://i.imgur.com/UPc8aYn.jpg')
+  s3a.upload
+  puts s3a.url
 end

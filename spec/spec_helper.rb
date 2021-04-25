@@ -1,4 +1,6 @@
-ENV['RACK_ENV'] = 'test'
+ENV['RACK_ENV']         = 'test'
+ENV['RESIZER_SERVER'] ||= 'http://localhost:4000'
+
 # auto migrate database
 
 # basic config

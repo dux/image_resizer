@@ -7,7 +7,7 @@ require_relative 'string'
 module ::RackImageResizer
   extend self
 
-  @@config = Struct.new(:secret, :server, :host).new
+  @@config = Struct.new(:secret, :server).new
 
   def set name, value
     @@config.send '%s=' % name, value
@@ -21,8 +21,13 @@ module ::RackImageResizer
     end
   end
 
-  def prefix_it url
-    url[0,1] == '/' ? App.config.host + url : url
+  def checksum str, length = 2
+    Digest::SHA1.hexdigest(App.config.secret+str)[0, length]
+  end
+
+  def header_checksum request
+    str = request.env['HTTP_USER_AGENT'].to_s + request.env['HTTP_ACCEPT'].to_s
+    checksum(str, 8)
   end
 
   ###
@@ -35,10 +40,6 @@ module ::RackImageResizer
 
     # return empty pixel unless self
     return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" if opts[:i].to_s == ''
-
-    # add host as prefix to images if relative given
-    opts[:i] = prefix_it opts[:i]
-    opts[:e] = prefix_it opts[:e] if opts[:e]
 
     raise ArgumentError.new('Invalid URL, no https?:// found') unless opts[:i] =~ %r{^https?://}
 
@@ -53,7 +54,7 @@ module ::RackImageResizer
     data.push Base64.urlsafe_encode64(opts.to_json).gsub(/=*\s*$/, '')
 
     # add check, 2 chars
-    data.push Digest::SHA1.hexdigest(App.config.secret+data.first)[0,2]
+    data.push checksum(data.first)
 
     # add extension
     ext = opts[:i].split('.').last.to_s.downcase
@@ -62,5 +63,9 @@ module ::RackImageResizer
 
     # return full url
     [App.config.server, data.join('')].join('/r/')
+  end
+
+  def upload_path request
+    '%s/upload/%s' % [@@config.server, header_checksum(request)]
   end
 end

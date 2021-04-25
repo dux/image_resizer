@@ -89,6 +89,26 @@ get '/ico/:domain' do
     content_type: content_type
 end
 
+get '/upload' do
+  if App.dev?
+    redirect ImageResizer.upload_path(request)
+  else
+    error 'Checksum not provided'
+  end
+end
+
+get '/upload/:header_checksum' do
+  header_checksum
+
+  erb :upload
+end
+
+post '/upload/:header_checksum' do
+  header_checksum
+
+  'ok'
+end
+
 # only in development
 if App.dev?
   get '/test' do

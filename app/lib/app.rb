@@ -18,10 +18,10 @@ module App
   CONFIG.error_logger   = Logger.new('./log/errors.log', 'weekly')
   CONFIG.error_logger.formatter = CONFIG.logger.formatter = proc { |severity, datetime, progname, msg| "#{datetime}: #{msg}\n" }
 
-  # CONFIG.aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
-  # CONFIG.aws_access_key_id     = ENV['AWS_ACCESS_KEY_ID']
-  # CONFIG.aws_region            = ENV['AWS_REGION']
-  # CONFIG.aws_bucket            = ENV['AWS_BUCKET']
+  CONFIG.aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+  CONFIG.aws_access_key_id     = ENV['AWS_ACCESS_KEY_ID']
+  CONFIG.aws_region            = ENV['AWS_REGION']
+  CONFIG.aws_bucket            = ENV['AWS_BUCKET']
 
   @last_cache_check = 0
 

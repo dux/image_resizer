@@ -60,8 +60,6 @@ class ImageResizer
       @opt.size = info[2]
     end
 
-    ap @opt.as_webp
-
     # if original is webp but it is not supporter, it has to be converted
     if @opt.ext == 'webp' && !@opt.as_webp
       @opt.ext = 'jpeg'
@@ -70,8 +68,11 @@ class ImageResizer
     @opt.resized = [App.config.root, "r/s#{@opt.size}/q#{@opt.as_webp ? 95 : @opt.quality}-#{sha1(@opt.image+@opt.watermark.to_s)}.#{@opt.ext}"].join('/cache/')
     target_dir = @opt.resized.sub(%r{/[^/]+$}, '')
 
-    File.unlink(@opt.resized)         if @opt.reload && File.exist?(@opt.resized)
-    FileUtils.mkdir_p(target_dir) unless Dir.exist?(target_dir)
+    FileUtils.mkdir_p target_dir unless Dir.exist?(target_dir)
+
+    if @opt.reload && File.exist?(@opt.resized)
+      File.unlink(@opt.resized)
+    end
 
     unless File.exists?(@opt.resized)
       text  = 'RESIZE "%s" TO "%s"' % [@opt.image, @opt.size]

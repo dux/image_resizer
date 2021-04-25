@@ -1,5 +1,5 @@
 require 'spec_helper'
-require './app/router_helper'
+require './app/routes/helper'
 
 describe 'image resizer' do
   let(:params) {

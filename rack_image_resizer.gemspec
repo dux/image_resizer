@@ -1,4 +1,4 @@
-version = File.read File.expand_path '../.version', __dir__
+version = File.read File.expand_path './.version', __dir__
 
 Gem::Specification.new 'rack_image_resizer', version do |s|
   s.summary     = 'Ruby rack image resizer'
