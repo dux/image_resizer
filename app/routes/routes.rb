@@ -122,7 +122,7 @@ end
 
 get '/upload' do
   if App.dev?
-    redirect RackImageResizer.upload_path(request)
+    redirect RackImageResizer.upload_path
   else
     error 'Checksum not provided'
   end

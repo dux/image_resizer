@@ -7,7 +7,6 @@ module App
 
   CONFIG.icon           = File.read('./public/favicon.ico')
   CONFIG.root           = File.expand_path('../..', File.dirname(__FILE__))
-  CONFIG.secret         = ENV.fetch('RESIZER_SECRET')       { 'secret' }
   CONFIG.quality        = ENV.fetch('RESIZER_QUALITY')      { 85 }
   CONFIG.clear_interval = ENV.fetch('RESIZER_CACHE_CLEAR')  { 10 }
   CONFIG.server         = ENV.fetch('RESIZER_SERVER')       { 'http://localhost:4000' }

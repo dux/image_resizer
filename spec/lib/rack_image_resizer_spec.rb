@@ -19,5 +19,16 @@ describe 'rack image resizer' do
 
     expect(hash).to eq(dec)
   end
+
+  it 'generates image upload url' do
+    path = RackImageResizer.upload_path.split('/').last
+    time = RackImageResizer.decode path
+    expect([0,1]).to include(Time.now.to_i - time.to_i)
+  end
+
+  it 'generates domain image path' do
+    path = RackImageResizer.ico_path 'google.com'
+    expect(path).to eq('http://localhost:4000/ico/Z29vZ2xlLmNvbQce')
+  end
 end
 

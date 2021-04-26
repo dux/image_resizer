@@ -22,7 +22,7 @@ module ::RackImageResizer
   end
 
   def checksum str, length = 2
-    Digest::SHA1.hexdigest(App.config.secret+str)[0, length]
+    Digest::SHA1.hexdigest(@@config.secret+str)[0, length]
   end
 
   def encode object
@@ -79,7 +79,7 @@ module ::RackImageResizer
     end
   end
 
-  def upload_path request
+  def upload_path
     '%s/upload/%s' % [@@config.server, encode(Time.now.to_i.to_s)]
   end
 

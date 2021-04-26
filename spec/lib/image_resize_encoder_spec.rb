@@ -32,16 +32,16 @@ describe 'image resizer' do
   ###
 
   it 'ENV[RESIZER_SERVER] should start with http' do
-    expect(ENV.fetch('RESIZER_SERVER') =~ /^https?:\/\//).to eq 0
+    expect(RackImageResizer.config.server =~ /^https?:\/\//).to eq 0
   end
 
   it 'shoud generate pack url' do
-    expect(url.split('/').last.length).to eq(78)
+    expect(url.split('/').last.length).to eq(66)
   end
 
   it 'shoud unpack url' do
     base = url.split('/r/').last
-    opts = unpack_url(base)
+    opts = RackImageResizer.decode(base)
     expect(opts[:s]).to eq(params[:size])
   end
 

@@ -13,7 +13,7 @@ App.die('ImageMagic convert not found in path') if `which convert` == ''
 App.die('Unsupported RACK_ENV') unless ['production', 'development'].include?(App.config.env)
 
 # secret must be present
-App.die('RESIZER_SECRET not defined') unless App.config.secret
+App.die('RESIZER_SECRET not defined') unless RackImageResizer.config.secret
 
 # clear stale cache on start
 App.clear_cache_do

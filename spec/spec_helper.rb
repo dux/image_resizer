@@ -1,5 +1,4 @@
 ENV['RACK_ENV']         = 'test'
-ENV['RESIZER_SERVER'] ||= 'http://localhost:4000'
 
 # auto migrate database
 
@@ -16,3 +15,8 @@ RSpec.configure do |config|
 end
 
 require './app/libs'
+
+RackImageResizer.config do |cfg|
+  cfg.secret = 'secret'
+  cfg.server = 'http://localhost:4000'
+end
