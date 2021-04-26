@@ -67,6 +67,15 @@ RACK_ENV=production
 RESIZER_CACHE_CLEAR=2d  # clear unacceded images every 2 days
 ```
 
+if you want to enable image upload, define this ENV variables
+
+```
+AWS_ACCESS_KEY_ID=foo
+AWS_SECRET_ACCESS_KEY=bar
+AWS_REGION=eu-central-1
+AWS_BUCKET=imagos
+```
+
 install command line apps
 
 ```
@@ -75,6 +84,12 @@ rake install
 ```
 
 Run via puma or passanger, it is a rack app.
+
+## Image or file upload upload
+
+```
+RackImageResizer.upload_path is_image: true, max_width: 1000
+```
 
 ## All the tasks
 

@@ -79,8 +79,11 @@ module ::RackImageResizer
     end
   end
 
-  def upload_path
-    '%s/upload/%s' % [@@config.server, encode(Time.now.to_i.to_s)]
+  def upload_path is_image: false, max_width: nil
+    path  = '%s/upload/%s' % [@@config.server, encode(Time.now.to_i.to_s)]
+    path += '?is_image=%s' % !!is_image
+    path += '&max_width=%s' % max_width.to_i
+    path
   end
 
   def ico_path domain
