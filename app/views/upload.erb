@@ -41,7 +41,7 @@
 
     let myDropzone = new Dropzone('.dropzone', {
       paramName:     'image',
-      url:           '<%= request.path %>',
+      url:           '<%= request.path %>?<%= @opts.join('&') %>',
       maxFilesize:   1,
       acceptedFiles: "image/*"
     });

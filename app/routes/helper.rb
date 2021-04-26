@@ -54,8 +54,8 @@ def render_image
   end
 
   # return if image is from local server
-  if @params[:image].start_with?(App.config.server)
-    raise 'Cant referece image on self (%s)' % App.config.server
+  if @params[:image].start_with?(RackImageResizer.config.server)
+    raise 'Cant referece image on self (%s)' % RackImageResizer.config.server
   end
 
   @reload = false

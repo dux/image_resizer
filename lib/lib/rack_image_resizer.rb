@@ -69,7 +69,7 @@ module ::RackImageResizer
     raise ArgumentError.new('Invalid URL, no https?:// found') unless opts[:i] =~ %r{^s?://}
 
     # return full url
-    [App.config.server, encode(opts)].join('/r/')
+    [@@config.server, encode(opts)].join('/r/')
   end
 
   def resize_url_unpack string, params={}

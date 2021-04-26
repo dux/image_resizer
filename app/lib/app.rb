@@ -9,7 +9,6 @@ module App
   CONFIG.root           = File.expand_path('../..', File.dirname(__FILE__))
   CONFIG.quality        = ENV.fetch('RESIZER_QUALITY')      { 85 }
   CONFIG.clear_interval = ENV.fetch('RESIZER_CACHE_CLEAR')  { 10 }
-  CONFIG.server         = ENV.fetch('RESIZER_SERVER')       { 'http://localhost:4000' }
   CONFIG.allow_origin   = ENV.fetch('RESIZER_ALLOW_ORIGIN') { '*' }
   CONFIG.env            = ENV.fetch('RACK_ENV')             { 'development' }
 
@@ -48,7 +47,11 @@ module App
 
   def log_error data=nil
     if dev?
-      ap [data.class, data.message, data.backtrace.first(5)]
+      if data.respond_to?(:backtrace)
+        ap [data.class, data.message, data.backtrace.first(5)]
+      else
+        ap caller.first(2)
+      end
     else
       config.error_logger.error [data.class, data.message].join(' - ')
       config.error_logger.error data.backtrace.first(5).join($/) if data.is_a?(StandardError)

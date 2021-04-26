@@ -68,8 +68,6 @@ get '/r/*' do
 
     @params = RackImageResizer.resize_url_unpack params[:splat].first, params
 
-    ap @params
-
     render_image
   end
 end
@@ -131,6 +129,11 @@ end
 get '/upload/:time_check' do
   time_check
 
+  @is_image = params[:is_image] == 'true' || params[:max_width]
+  @opts = []
+  @opts.push 'is_image=%s' % (@is_image ? true : false)
+  @opts.push "max_width=%s" % params[:max_width] if params[:max_width]
+
   erb :upload
 end
 
@@ -139,8 +142,8 @@ post '/upload/:time_check' do
 
   opts = {}
   opts[:source]    = params[:image]['tempfile'].path
-  opts[:max_width] = 1600
-  opts[:is_image]  = true
+  opts[:max_width] = params[:max_width] ? params[:max_width].to_i : nil
+  opts[:is_image]  = params[:max_width] || params[:is_image] == 'true' ? true : false
 
   s3 = AwsS3Asset.new opts
   s3.upload
