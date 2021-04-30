@@ -39,6 +39,7 @@ end
 ###
 
 get('/healthcheck') { 'ok' }
+get('/ok') { 'ok' }
 
 # options '/*' do
 #   response.headers['Allow'] = 'OPTIONS, GET, HEAD, POST'

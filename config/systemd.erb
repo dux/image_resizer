@@ -1,0 +1,14 @@
+[Unit]
+Description=Puma HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+User=<%= `whoami`.chomp %>
+WorkingDirectory=<%= Dir.pwd %>
+ExecStart=<%= `which puma`.chomp %> -C <%= Dir.pwd %>/config/puma.rb
+PIDFile=<%= Dir.pwd %>/tmp/puma.pid
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -109,6 +109,54 @@ task :test_upload do
   puts s3a.url
 end
 
+desc 'print instructions to enable as systemd service'
+task :systemd do
+  require "erb"
+
+  template = ERB.new(File.read('./config/systemd.erb')).result
+
+  puts <<~INFO
+    ### put this file data in "/etc/systemd/system/puma.service"
+    ### START
+    #{template}
+    ### END
+
+    ### info
+    # After installing or making changes to puma.service
+    sudo systemctl daemon-reload
+
+    # Enable so it starts on boot
+    sudo systemctl enable puma.service
+
+    # Initial start up.
+    sudo systemctl start puma.service
+
+    # Check status
+    sudo systemctl status puma.service
+
+    # Now running restart does an immediate hot/phased restart
+    sudo systemctl restart puma.service
+  INFO
+end
+
+# best to put all systemd services in "/etc/systemd/system" and prefix them with web
+desc 'restart puma and caddy service. run as "rbenv sudo bundle exec rake restart"'
+task :restart do
+  services =  Dir['/etc/systemd/system/*.service']
+    .map {|f| f.split('/').last.split('.').first }
+    .select {|el| ['caddy', 'puma'].include?(el) || el.start_with?('web-') }
+
+  for service in services
+    run 'systemctl restart %s.service' % service
+  end
+
+  sleep 2
+
+  for service in services
+    run 'systemctl status %s.service' % service
+  end
+end
+
 task :tmp do
   require_relative 'app/libs'
 
