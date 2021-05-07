@@ -135,6 +135,8 @@ get '/upload/:time_check' do
   @opts.push 'is_image=%s' % (@is_image ? true : false)
   @opts.push "max_width=%s" % params[:max_width] if params[:max_width]
 
+  response.header['X-Frame-Options'] = 'ALLOW *'
+
   erb :upload
 end
 

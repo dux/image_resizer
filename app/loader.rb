@@ -17,3 +17,6 @@ App.die('RESIZER_SECRET not defined') unless RackImageResizer.config.secret
 
 # clear stale cache on start
 App.clear_cache_do
+
+FileUtils.mkdir_p './log'
+
