@@ -1,35 +1,41 @@
 <%= render :erb, :_header %>
 
-<h2>Image upload test</h2>
+<style>
+  table td {
+    vertical-align: top;
+  }
+</style>
 
-<pre class="code">
-  # code example ruby
-  RackImageResizer.upload_path
+<h2><a href="<%= RackImageResizer.upload_path %>">Uploaded image iframe + debuger</a></h2>
 
-  # code example JavaScript
-  window.addEventListener('message', function(e) {
-    const msg = JSON.parse(e.data)
-
-    if (msg.type == 'image-upload') {
-      document.getElementById('target').value = msg.url
-    }
-  });
-</pre>
-
-<h2>Uploaded image path </h2>
-<input id="target" type="text" style="width: 800px;" />
+<table>
+  <tr>
+    <td style="width: 350px;">
+      <iframe id="iframe" src="<%= RackImageResizer.upload_path %>" style="width: 300px; height: 200px; border: 0;"></iframe>
+    </td>
+    <td id="img-response">
+    </td>
+  <tr>
+</table>
 
 <hr />
 
-<iframe src="<%= RackImageResizer.upload_path %>?max_width=1200&is_image=true" style="width: 300px; height: 200px; border: 0;"></iframe>
+<h3>Example code</h3>
 
-<script>
-window.addEventListener('message', function(e) {
-  const msg = JSON.parse(e.data)
+<pre id="code" class="code"></pre>
+<script id="test-script">
+  window.addEventListener('message', function(e) {
+    const msg = typeof e.data == 'object' ? e.data : JSON.parse(e.data);
 
-  if (msg.type == 'image-upload') {
-    document.getElementById('target').value = msg.url
-  }
-});
+    if (msg.type == 'image-upload') {
+      document.getElementById('img-response').innerHTML = `
+        <pre>${JSON.stringify(msg.data, null, 2)}</pre>
+        <hr />
+        <img src="${msg.data.url}" style="max-width: 300px;" />
+      `
+    }
+  });
 </script>
-
+<script>
+  document.getElementById('code').innerText = '<iframe src="<'+'%= RackImageResizer.upload_path %'+'>"></iframe>\n\n<div id="img-response"></div>'+'\n\n<'+'script>'+document.getElementById('test-script').innerText+'<'+'/script>'
+</script>

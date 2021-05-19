@@ -33,6 +33,11 @@ module App
     app.deliver
   end
 
+  def run what
+    self.log 'RUN: %s' % what
+    system "#{what} 2>&1"
+  end
+
   def dev?
     ENV.fetch('RACK_ENV') == 'development'
   end

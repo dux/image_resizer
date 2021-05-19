@@ -143,12 +143,24 @@ end
 post '/upload/:time_check' do
   time_check
 
-  File.write './tmp/foo.txt', params[:image].to_json
-
   opts = {}
-  opts[:source]    = params[:image]['tempfile'].path
+
+  if params[:remote_url]
+    local = Pathname.new './cache/dl/%s' % params[:remote_url].gsub(/[^\w\.]/, '')
+
+    unless local.exist?
+      App.run "curl --max-time 10 -L '#{params[:remote_url]}' --create-dirs -s -o '#{local}'"
+    end
+
+    opts[:source] = local.to_s
+    file_name = params[:remote_url].split('/').last
+  else
+    opts[:source] = params[:image]['tempfile'].path
+    file_name     = params[:image][:filename]
+  end
+
   opts[:max_width] = params[:max_width] ? params[:max_width].to_i : nil
-  opts[:is_image]  = params[:max_width] || params[:is_image] == 'true' ? true : false
+  opts[:is_image]  = params[:max_width] || params[:is_image].to_s == 'true' ? true : false
 
   s3 = AwsS3Asset.new opts
   file_url = s3.upload
@@ -157,8 +169,7 @@ post '/upload/:time_check' do
 
   {
     url:        file_url,
-    name:       params[:image][:filename],
-    type:       params[:image][:type],
+    name:       file_name,
     size:       File.size(s3.local_file),
     dimensions: s3.image_dimensions
   }.to_json

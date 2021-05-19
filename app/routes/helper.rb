@@ -1,7 +1,9 @@
 def time_check
-  time = RackImageResizer.decode(params[:time_check]).to_i
+  opts = RackImageResizer.decode(params.delete(:time_check))
+  time = opts.delete(:time).to_i
   diff = (Time.now.to_i - time).round
   error 'Url check fail' if diff >  10000
+  params.merge! opts
 end
 
 def rescued

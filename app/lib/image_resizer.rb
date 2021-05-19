@@ -142,8 +142,7 @@ class ImageResizer
   end
 
   def run what
-    App.log 'RUN: %s' % what
-    system "#{what} 2>&1"
+    App.run what
   end
 
   def download

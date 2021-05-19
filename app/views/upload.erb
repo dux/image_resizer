@@ -48,8 +48,8 @@
     }
   </style>
 
-  <form method="post" action="<%= request.path %>?<%= @opts.join('&') %>">
-    <input type="text" placeholder="paste image or url" />
+  <form onsubmit="uploadByUrl(); return false;">
+    <input type="text" id="remote_url" placeholder="paste image or url" autocomplete="off" />
   </form>
 
   <br clear="all" />
@@ -59,28 +59,57 @@
   <script>
     Dropzone.autoDiscover = false;
 
-    let myDropzone = new Dropzone('.dropzone', {
+    var myDropzone = new Dropzone('.dropzone', {
       paramName:     'image',
-      url:           '<%= request.path %>?<%= @opts.join('&') %>',
-      maxFilesize:   1,
+      url:           '<%= request.path %>',
+      maxFilesize:   10,
       dictDefaultMessage: '<b>Click</b> here for upload dialog',
       acceptedFiles: "image/*"
     });
 
     myDropzone.on("complete", function(response) {
-      let text = response.xhr.responseText;
+      if (response.xhr) {
+        var text = response.xhr.responseText;
 
-      if (text.indexOf('Error:') > -1) {
-        Info.error(text);
+        if (text.indexOf('Error:') > -1) {
+          lert('Upload error: '+text);
+        } else {
+          sendMessage(JSON.parse(text));
+          this.removeAllFiles(true);
+        }
       } else {
-        sendMessage(JSON.parse(text));
+        document.body.innerHTML += '<style>.dz-error-message { position: fixed; top: 10px; left: 10px; right: 10px; background: #fee; border: 2px solid #a77; z-index: 1; padding: 5px; }</style>'
       }
     });
 
     function sendMessage(message) {
       var msg = { type: 'image-upload', data: message }
       console.log('image-upload-server', message)
-      window.parent.postMessage(JSON.stringify(msg), '*');
+      window.parent.postMessage(msg, '*');
+
+      var input = document.getElementById('remote_url');
+      input.disabled = false;
+      input.value = '';
+    }
+
+    function uploadByUrl() {
+      var input      = document.getElementById('remote_url')
+      var remote_url = input.value
+
+      if (remote_url.includes('http')) {
+        input.value = 'uploading ...'
+        input.disabled = true
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", '<%= request.path %>', true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.send("remote_url="+escape(remote_url));
+        xhr.onreadystatechange = function() {
+          if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            sendMessage(JSON.parse(xhr.responseText));
+          }
+        }
+      }
     }
 
     // handle on paste event
