@@ -22,6 +22,10 @@ module ::RackImageResizer
   end
 
   def checksum str, length = 2
+    unless @@config.secret
+      raise ArgumentError.new('Rack image resizer - secret not defined')
+    end
+
     Digest::SHA1.hexdigest(@@config.secret+str)[0, length]
   end
 

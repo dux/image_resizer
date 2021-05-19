@@ -104,6 +104,10 @@ class AwsS3Asset
     url
   end
 
+  def local_file
+    @local_file
+  end
+
   private
 
   def set_local_source

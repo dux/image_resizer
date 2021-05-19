@@ -18,7 +18,7 @@ end
 
 desc 'Run development server'
 task :dev do
-  run 'find ./ | entr -r bundle exec puma -p 4000 -t 0:64'
+  run 'find ./app ./lib -type f | entr -r bundle exec puma -p 4000 -t 0:64'
 end
 
 desc 'Run production server'
@@ -160,5 +160,5 @@ end
 task :tmp do
   require_relative 'app/libs'
 
-  puts RackImageResizer.resize_url i: 'http://i.imgur.com/krurDGE.jpg'
+  puts RackImageResizer.upload_path is_image: true, max_width: 1024
 end

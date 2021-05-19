@@ -9,12 +9,13 @@
     body {
       padding: 0px;
       margin: 0px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
 
     .dropzone {
       border: 1px solid #ccf;
       position: absolute;
-      top: 0;
+      top: 50px;
       left: 0;
       right: 0;
       bottom: 0;
@@ -27,12 +28,31 @@
 
     .dropzone button {
       padding: 7px 15px;
+      border: none;
+      background: transparent;
+      font-size: 15px;
     }
 
     .dropzone:hover { border: 1px solid #aaf;  }
 
     .dropzone svg { display: none; }
+
+    input {
+      border: 2px solid #ccf;
+      border-radius: 4px;
+      width: 96%;
+      font-size:14px;
+      height: 30px;
+      padding-left: 5px;
+
+    }
   </style>
+
+  <form method="post" action="<%= request.path %>?<%= @opts.join('&') %>">
+    <input type="text" placeholder="paste image or url" />
+  </form>
+
+  <br clear="all" />
 
   <div class="dropzone"></div>
 
@@ -43,6 +63,7 @@
       paramName:     'image',
       url:           '<%= request.path %>?<%= @opts.join('&') %>',
       maxFilesize:   1,
+      dictDefaultMessage: '<b>Click</b> here for upload dialog',
       acceptedFiles: "image/*"
     });
 
@@ -52,18 +73,26 @@
       if (text.indexOf('Error:') > -1) {
         Info.error(text);
       } else {
-        sendMessage(text);
+        sendMessage(JSON.parse(text));
       }
     });
 
     function sendMessage(message) {
-      var msg = { type: 'image-upload', url: message }
+      var msg = { type: 'image-upload', data: message }
+      console.log('image-upload-server', message)
       window.parent.postMessage(JSON.stringify(msg), '*');
     }
 
-    setTimeout(()=>{
-      sendMessage('message from iframe, waiting for URL')
-    }, 1000)
+    // handle on paste event
+    document.body.onpaste = function(event){
+      var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let index in items) {
+        var item = items[index];
+        if (item.kind === 'file') {
+          myDropzone.addFile(item.getAsFile())
+        }
+      }
+    }
   </script>
 </body>
 </html>

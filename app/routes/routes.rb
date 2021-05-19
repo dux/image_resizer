@@ -5,6 +5,8 @@ before do
 
   # define etag and return from cache if possible
   @etag = '"%s"' % Digest::SHA1.hexdigest(request.url)
+  response.header['X-Frame-Options'] = 'ALLOWALL'
+  response.header['Access-Control-Allow-Origin'] = '*'
 end
 
 ###
@@ -41,11 +43,11 @@ end
 get('/healthcheck') { 'ok' }
 get('/ok') { 'ok' }
 
-# options '/*' do
-#   response.headers['Allow'] = 'OPTIONS, GET, HEAD, POST'
-#   response.headers['Cache-Control'] = 'max-age=604800'
-#   status 204
-# end
+options '/*' do
+  response.headers['Allow'] = 'OPTIONS, GET, HEAD, POST'
+  response.headers['Cache-Control'] = 'max-age=604800'
+  status 204
+end
 
 get '/' do
   @version = File.read('.version')
@@ -135,13 +137,13 @@ get '/upload/:time_check' do
   @opts.push 'is_image=%s' % (@is_image ? true : false)
   @opts.push "max_width=%s" % params[:max_width] if params[:max_width]
 
-  response.header['X-Frame-Options'] = 'ALLOW *'
-
   erb :upload
 end
 
 post '/upload/:time_check' do
   time_check
+
+  File.write './tmp/foo.txt', params[:image].to_json
 
   opts = {}
   opts[:source]    = params[:image]['tempfile'].path
@@ -149,8 +151,18 @@ post '/upload/:time_check' do
   opts[:is_image]  = params[:max_width] || params[:is_image] == 'true' ? true : false
 
   s3 = AwsS3Asset.new opts
-  s3.upload
+  file_url = s3.upload
+
+  content_type :json
+
+  {
+    url:        file_url,
+    name:       params[:image][:filename],
+    type:       params[:image][:type],
+    size:       File.size(s3.local_file),
+    dimensions: s3.image_dimensions
+  }.to_json
 rescue => e
-  Lux.error.log e
+  App.log_error e
   'Error: %s' % e.message
 end
