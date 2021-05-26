@@ -47,7 +47,7 @@ def render_image
   @params[:error_url] ||= @params.delete(:e)
 
   if App.dev?
-    print "\e[H\e[2J\e[3J" # clear osx screen :)
+    # print "\e[H\e[2J\e[3J" # clear osx screen :)
   end
 
   # check for image existance

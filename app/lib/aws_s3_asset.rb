@@ -46,8 +46,6 @@ class AwsS3Asset
   ###
 
   def initialize source:, bucket: nil, max_width: nil, is_image: nil, remote_path: nil, optimize: nil
-    remote_path ||= Time.now.strftime('%Y/%m/%d/%H')
-
     @source      = source
     @max_width   = max_width
     @is_image    = is_image
@@ -58,7 +56,6 @@ class AwsS3Asset
     @hash        = Digest::SHA1.hexdigest(@source+@max_width.to_s)
     @file_name   = '%s.%s' % [@hash, @ext]
     @local_file  = './tmp/s3tmp-%s' % @file_name
-    @remote_file = '%s/%s' % [remote_path, @file_name]
     @optimize    = !!optimize
 
     raise "No bucket defined and no AWS_BUCKET set" unless config(:bucket)
@@ -69,8 +66,10 @@ class AwsS3Asset
     end
 
     set_local_source
-
     check_image if @is_image
+
+    remote_path ||= Time.now.strftime('%Y/%m/%d')
+    @remote_file = '%s/%s.%s' % [remote_path, signature, @ext]
   end
 
   # returns full S3 path
@@ -83,14 +82,25 @@ class AwsS3Asset
     `identify '#{@local_file}'`.split(' ')[2].to_s.split('x').map(&:to_i)
   end
 
+  def signature
+    if @is_image
+      data = `identify -verbose '#{@local_file}' | grep signature`
+    else
+      data = File.read @local_file
+    end
+
+    Digest::SHA1.hexdigest data
+  end
+
   def upload
     # resize image if needed
     if @max_width && @is_image
       run "convert '#{@local_file}' -resize '#{@max_width}x3000>' '#{@local_file}' 2>&1"
     end
 
-    metadata = { 'etag':'W/' + Digest::SHA1.hexdigest(File.read @local_file) }
-    metadata['contant-type'] = "image/#{@ext}" if @is_image
+    metadata = {}
+    metadata['etag']         = '"%s"' % signature
+    metadata['contant-type'] = 'image/%s' % @ext if @is_image
 
     command  = 'AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s' % [config(:access_key_id), config(:secret_access_key)]
     command += ' aws s3 cp %s s3://%s/%s --metadata-directive REPLACE --cache-control max-age=62000000,public --acl public-read' % [@local_file, config(:bucket), @remote_file]

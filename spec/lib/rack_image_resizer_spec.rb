@@ -23,7 +23,7 @@ describe 'rack image resizer' do
   it 'generates image upload url' do
     path = RackImageResizer.upload_path.split('?').first.split('/').last
     time = RackImageResizer.decode path
-    expect([0,1]).to include(Time.now.to_i - time.to_i)
+    expect(time[:time].to_i).to eq(Time.now.to_i)
   end
 
   it 'generates domain image path' do

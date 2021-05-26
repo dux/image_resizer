@@ -65,7 +65,7 @@ class ImageResizer
       @opt.ext = 'jpeg'
     end
 
-    @opt.resized = [App.config.root, "r/s#{@opt.size}/q#{@opt.as_webp ? 95 : @opt.quality}-#{sha1(@opt.image+@opt.watermark.to_s)}.#{@opt.ext}"].join('/cache/')
+    @opt.resized = [App.config.root, "r/s#{@opt.size.sub('^', 'c').gsub(/[^\w]/, '')}/q#{@opt.as_webp ? 95 : @opt.quality}-#{sha1(@opt.image+@opt.watermark.to_s)}.#{@opt.ext}"].join('/cache/')
     target_dir = @opt.resized.sub(%r{/[^/]+$}, '')
 
     FileUtils.mkdir_p target_dir unless Dir.exist?(target_dir)
@@ -90,7 +90,7 @@ class ImageResizer
     end
 
     @opt.cache_path =
-    if @opt.as_webp
+    if @opt.as_webp && false # disabled because grayed out images
       @opt.ext = 'webp'
       new_target = @opt.resized.sub(/\.\w+$/, '.webp')
 
@@ -180,9 +180,10 @@ class ImageResizer
     size += 'x'+size.sub('^','') if size.include?('^') && !size.include?('x')
 
     opts = []
+    opts.push '-synchronize'
     opts.push '-auto-orient'
     opts.push '-strip'
-    opts.push "-quality 95"
+    opts.push '-quality 95'
     opts.push '-resize %s' % size
     opts.push '-unsharp %s' % ENV.fetch('UNSHARP_MASK') { '1x1+1+0' } if do_unsharp && @opt.ext == 'jpeg'
     opts.push '-interlace Plane'
@@ -193,6 +194,9 @@ class ImageResizer
       opts.push '-extent %s' % size.sub('^','')
     end
 
+    # I have wired resize bug
+    # https://legacy.imagemagick.org/discourse-server/viewtopic.php?t=32185
+    # tried to add synchronize and sleep to fix
     run 'convert "%s" %s %s' % [@opt.original, opts.join(' '), @opt.resized]
   end
 
