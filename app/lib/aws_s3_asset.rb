@@ -132,7 +132,7 @@ class AwsS3Asset
     # convert images to webp format before upload
     if @optimize
       new_target = @local_file.sub(/\.\w+/, '.webp')
-      run "cwebp -quiet -q 80 #{@local_file} -o #{new_target}"
+      run "convert #{@local_file} #{new_target}"
 
       @local_file = new_target
       @remote_file.sub!(/\.\w+/, '.webp')

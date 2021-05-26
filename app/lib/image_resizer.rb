@@ -90,12 +90,12 @@ class ImageResizer
     end
 
     @opt.cache_path =
-    if @opt.as_webp && false # disabled because grayed out images
+    if @opt.as_webp && false# disabled because grayed out images
       @opt.ext = 'webp'
       new_target = @opt.resized.sub(/\.\w+$/, '.webp')
 
       if @opt.reload || !File.exist?(new_target)
-        run "cwebp -quiet -q #{@opt.quality.to_i} #{@opt.resized} -o #{new_target}"
+        run "convert #{@opt.resized} #{new_target}"
       end
 
       new_target

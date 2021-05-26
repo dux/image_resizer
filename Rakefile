@@ -44,7 +44,7 @@ desc 'Install dependecies'
 task :install do
   `mkdir -p ./log`
 
-  libs = 'webp imagemagick pngquant jpegoptim'
+  libs = 'imagemagick pngquant jpegoptim'
   sudo = `whoami`.chomp == 'root' ? '' : 'sudo'
 
   if `which brew`.to_s != ''
