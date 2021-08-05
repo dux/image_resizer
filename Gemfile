@@ -1,3 +1,6 @@
+# before all
+# apt-get install imagemagick libmagickcore-dev libmagickwand-dev pngquant jpegoptim
+
 source 'https://rubygems.org'
 
 puts "rake install - to install system libs\n\n" if @inferred_plugins

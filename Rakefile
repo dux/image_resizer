@@ -44,19 +44,19 @@ desc 'Install dependecies'
 task :install do
   `mkdir -p ./log`
 
-  libs = 'imagemagick pngquant jpegoptim'
+  libs = 'imagemagick libmagickcore-dev libmagickwand-dev pngquant jpegoptim'
   sudo = `whoami`.chomp == 'root' ? '' : 'sudo'
 
   if `which brew`.to_s != ''
-    system 'brew upgrade %s' % libs
+    run 'brew upgrade %s' % libs
     run 'brew install entr'
 
   elsif `which apt-get`.to_s != ''
-    system "#{sudo} apt-get install -y %s" % libs
+    run "#{sudo} apt-get install -y %s" % libs
+    run 'sudo apt-get install imagemagick libmagickcore-dev libmagickwand-dev'
 
   elsif `which apk`.to_s != ''
-    system "#{sudo} apk add -y libffi-dev %s" % libs
-
+    run "#{sudo} apk add -y libffi-dev %s" % libs
   else
     puts 'pls install libs: %s' % libs
 
@@ -140,6 +140,7 @@ task :systemd do
 end
 
 # best to put all systemd services in "/etc/systemd/system" and prefix them with web
+# sudo `which rake` restart
 desc 'restart puma and caddy service. run as "rbenv sudo bundle exec rake restart"'
 task :restart do
   services =  Dir['/etc/systemd/system/*.service']
@@ -147,13 +148,13 @@ task :restart do
     .select {|el| ['caddy', 'puma'].include?(el) || el.start_with?('web-') }
 
   for service in services
-    run 'systemctl restart %s.service' % service
+    run 'systemctl restart %s.service | tee' % service
   end
 
   sleep 2
 
   for service in services
-    run 'systemctl status %s.service' % service
+    run 'systemctl status %s.service | tee' % service
   end
 end
 

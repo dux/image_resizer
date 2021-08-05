@@ -27,7 +27,7 @@
   window.addEventListener('message', function(e) {
     const msg = typeof e.data == 'object' ? e.data : JSON.parse(e.data);
 
-    if (msg.type == 'image-upload') {
+    if (msg.type == 'file-upload') {
       document.getElementById('img-response').innerHTML = `
         <pre>${JSON.stringify(msg.data, null, 2)}</pre>
         <hr />
