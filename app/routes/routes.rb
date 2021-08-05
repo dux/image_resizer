@@ -162,7 +162,7 @@ post '/upload/:time_check' do
   opts[:max_width] = params[:max_width] ? params[:max_width].to_i : nil
   opts[:is_image]  = params[:max_width] || params[:is_image].to_s == 'true' ? true : false
 
-  s3 = AwsS3Asset.new opts
+  s3 = AwsS3Asset.new **opts
   file_url = s3.upload
 
   content_type :json
