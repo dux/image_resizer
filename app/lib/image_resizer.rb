@@ -18,8 +18,8 @@ class ImageResizer
     @opt.as_webp   = as_webp
     @opt.request   = request
     @opt.size      = size.to_s.gsub(/['"]/, '')
-    @opt.watermark = watermark
     @opt.size      = nil if @opt.size == ''
+    @opt.watermark = watermark
 
     # check max width and height
     max_size = (ENV.fetch('MAX_IMAGE_SIZE') { 2000 }).to_i

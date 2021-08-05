@@ -7,6 +7,8 @@ gem 'rack'
 gem 'json'
 gem 'dotenv'
 gem 'sinatra'
+gem 'blurhash'
+gem 'rmagick'
 
 # for site icon get
 gem 'rest-client'

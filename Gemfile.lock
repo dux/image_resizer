@@ -2,6 +2,8 @@ GEM
   remote: https://rubygems.org/
   specs:
     awesome_print (1.9.2)
+    blurhash (0.1.5)
+      ffi (~> 1.14)
     coderay (1.1.3)
     colorize (0.8.1)
     diff-lcs (1.4.4)
@@ -49,6 +51,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    rmagick (4.2.2)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
       rspec-expectations (~> 3.10.0)
@@ -78,6 +81,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  blurhash
   colorize
   dotenv
   hash_wia
@@ -89,8 +93,9 @@ DEPENDENCIES
   rake
   rerun
   rest-client
+  rmagick
   rspec
   sinatra
 
 BUNDLED WITH
-   2.2.5
+   2.2.22

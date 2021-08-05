@@ -20,7 +20,7 @@ require 'digest'
 # b.url
 
 class AwsS3Asset
-  attr_accessor :hash
+  attr_accessor :hash, :local_file
 
   class << self
     def config name
@@ -54,8 +54,7 @@ class AwsS3Asset
     @is_image    = true if ['jpg', 'jpeg', 'gif', 'png'].include?(@ext)
     @is_image    = false if @ext == 'svg'
     @hash        = Digest::SHA1.hexdigest(@source+@max_width.to_s)
-    @file_name   = '%s.%s' % [@hash, @ext]
-    @local_file  = './tmp/s3tmp-%s' % @file_name
+    @local_file  = './tmp/s3tmp-%s.%s' % [@hash, @ext]
     @optimize    = !!optimize
 
     raise "No bucket defined and no AWS_BUCKET set" unless config(:bucket)
@@ -82,14 +81,25 @@ class AwsS3Asset
     `identify '#{@local_file}'`.split(' ')[2].to_s.split('x').map(&:to_i)
   end
 
+  # https://blurha.sh/
+  def image_blur_hash
+    image    = Magick::ImageList.new @local_file
+    blurhash = Blurhash.encode(image.columns, image.rows, image.export_pixels)
+    Base64.urlsafe_encode64 blurhash, padding: false
+  end
+
   def signature
+    data = [`sha1sum '#{@local_file}'`.split(' ').first]
+
     if @is_image
-      data = `identify -verbose '#{@local_file}' | grep signature`
-    else
-      data = File.read @local_file
+      data.push '%sx%s' % image_dimensions
+
+      if App.config.blur_hash
+        data.push image_blur_hash
+      end
     end
 
-    Digest::SHA1.hexdigest data
+    data.join('--')
   end
 
   def upload
@@ -112,10 +122,6 @@ class AwsS3Asset
     # File.unlink(@local_file)
 
     url
-  end
-
-  def local_file
-    @local_file
   end
 
   private

@@ -3,7 +3,7 @@
 module App
   extend self
 
-  CONFIG = Struct.new(:server, :icon, :logger, :error_logger, :root, :secret, :quality, :clear_interval, :env, :allow_origin, :aws_secret_access_key, :aws_access_key_id, :aws_region, :aws_bucket).new
+  CONFIG = Struct.new(:server, :icon, :logger, :error_logger, :root, :secret, :quality, :clear_interval, :env, :allow_origin, :aws_secret_access_key, :aws_access_key_id, :aws_region, :aws_bucket, :blur_hash).new
 
   CONFIG.icon           = File.read('./public/favicon.ico')
   CONFIG.root           = File.expand_path('../..', File.dirname(__FILE__))
@@ -11,6 +11,7 @@ module App
   CONFIG.clear_interval = ENV.fetch('RESIZER_CACHE_CLEAR')  { 10 }
   CONFIG.allow_origin   = ENV.fetch('RESIZER_ALLOW_ORIGIN') { '*' }
   CONFIG.env            = ENV.fetch('RACK_ENV')             { 'development' }
+  CONFIG.blur_hash      = ENV.fetch('BLUR_HASH') { false }
 
   CONFIG.logger         = Logger.new('./log/app.log', 'weekly')
   CONFIG.error_logger   = Logger.new('./log/errors.log', 'weekly')
@@ -20,6 +21,7 @@ module App
   CONFIG.aws_access_key_id     = ENV['AWS_ACCESS_KEY_ID']
   CONFIG.aws_region            = ENV['AWS_REGION']
   CONFIG.aws_bucket            = ENV['AWS_BUCKET']
+
 
   @last_cache_check = 0
 

@@ -83,8 +83,8 @@
     });
 
     function sendMessage(message) {
-      var msg = { type: 'image-upload', data: message }
-      console.log('image-upload-server', message)
+      var msg = { type: 'file-upload', data: message }
+      console.log('file-upload-server', message)
       window.parent.postMessage(msg, '*');
 
       var input = document.getElementById('remote_url');
