@@ -64,7 +64,7 @@
       url:           '<%= request.path %>',
       maxFilesize:   10,
       dictDefaultMessage: '<b>Click</b> here for upload dialog',
-      acceptedFiles: "image/*"
+      acceptedFiles: <%= params[:is_image] ? '"image/*"' : 'null' %>
     });
 
     myDropzone.on("complete", function(response) {

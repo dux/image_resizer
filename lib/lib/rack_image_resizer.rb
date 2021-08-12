@@ -84,7 +84,7 @@ module ::RackImageResizer
   end
 
   def upload_path is_image: false, max_width: nil
-    opts = { time: Time.now.to_i.to_s, is_image: is_image, max_width: max_width }
+    opts = { time: Time.now.to_i.to_s, is_image: is_image, max_width: is_image ? max_width : nil }
     '%s/upload/%s' % [@@config.server, encode(opts.to_json)]
   end
 
