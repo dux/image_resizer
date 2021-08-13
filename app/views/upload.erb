@@ -72,7 +72,7 @@
         var text = response.xhr.responseText;
 
         if (text.indexOf('Error:') > -1) {
-          lert('Upload error: '+text);
+          alert('Upload error: ' + text);
         } else {
           sendMessage(JSON.parse(text));
           this.removeAllFiles(true);
@@ -97,6 +97,11 @@
       var remote_url = input.value
 
       if (remote_url.includes('http')) {
+        <% unless params[:is_image] %>
+          sendMessage({url: remote_url});
+          return;
+        <% end %>
+
         input.value = 'uploading ...'
         input.disabled = true
 

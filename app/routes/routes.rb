@@ -167,6 +167,8 @@ post '/upload/:time_check' do
 
   content_type :json
 
+  file_name = file_name.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+
   {
     url:        file_url,
     name:       file_name,
