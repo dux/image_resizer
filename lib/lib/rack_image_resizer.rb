@@ -7,7 +7,7 @@ require_relative 'string'
 module ::RackImageResizer
   extend self
 
-  @@config = Struct.new(:secret, :server).new
+  @@config ||= Struct.new(:secret, :server).new
 
   def set name, value
     @@config.send '%s=' % name, value
@@ -83,8 +83,8 @@ module ::RackImageResizer
     end
   end
 
-  def upload_path is_image: false, max_width: nil
-    opts = { time: Time.now.to_i.to_s, is_image: is_image, max_width: is_image ? max_width : nil }
+  def upload_path is_image: false, max_width: nil, path: nil
+    opts = { time: Time.now.to_i.to_s, is_image: is_image, max_width: is_image ? max_width : nil, path: path }
     '%s/upload/%s' % [@@config.server, encode(opts.to_json)]
   end
 

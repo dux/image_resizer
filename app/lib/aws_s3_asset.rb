@@ -144,7 +144,7 @@ class AwsS3Asset
       @remote_file.sub!(/\.\w+/, '.webp')
     end
 
-    raise 'Local file not found' unless File.exists?(@local_file)
+    raise 'Local file not found' unless File.exist?(@local_file)
   end
 
   def check_image

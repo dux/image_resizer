@@ -23,7 +23,7 @@ describe 'image resizer' do
     img     = ImageResizer.new image: params[:image], quality: 80, reload: true, size: size
     resized = img.resize
 
-    expect(File.exists?(img.resized)).to eq(true)
+    expect(File.exist?(img.resized)).to eq(true)
 
     info = `identify #{img.resized}`.split(' ')
     info[2].split('x').map(&:to_i)

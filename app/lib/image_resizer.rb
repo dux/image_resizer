@@ -74,7 +74,7 @@ class ImageResizer
       File.unlink(@opt.resized)
     end
 
-    unless File.exists?(@opt.resized)
+    unless File.exist?(@opt.resized)
       text  = 'RESIZE "%s" TO "%s"' % [@opt.image, @opt.size]
       text += ' (%s | %s)' % [@opt.request.ip || '-', @opt.request.env['HTTP_REFERER'] || '-'] if @opt.request
       App.log text
@@ -84,7 +84,7 @@ class ImageResizer
       optimize
     end
 
-    unless File.exists? @opt.resized
+    unless File.exist? @opt.resized
       File.unlink(@opt.original)
       raise 'Resize failed'
     end
@@ -146,10 +146,10 @@ class ImageResizer
   end
 
   def download
-    unless File.exists?(@opt.original)
+    unless File.exist?(@opt.original)
       run "curl --max-time 10 -L '#{@opt.image}' --create-dirs -s -o '#{@opt.original}'"
 
-      if File.exists?(@opt.original)
+      if File.exist?(@opt.original)
         App.log 'DOWNLOAD %s (%d kb)' % [@opt.image, File.stat(@opt.original).size/1024]
       else
         raise "Can't download source from %s" % @opt.image
